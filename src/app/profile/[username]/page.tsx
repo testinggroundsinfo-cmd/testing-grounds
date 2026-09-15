@@ -25,7 +25,7 @@ type PublishedProject = {
   slug: string;
   description: string;
   platforms: PlatformKind[];
-  cover_image_url: string | null;
+  cover_url: string | null;
 };
 
 const platformLabels: Record<PlatformKind, string> = {
@@ -56,7 +56,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { data: projects, error: projectsError } = await supabase
     .from("projects")
     .select(
-      "id, title, category, slug, description, platforms, cover_image_url",
+      "id, title, category, slug, description, platforms, cover_url",
     )
     .eq("owner_id", profile.id)
     .eq("is_published", true)
@@ -146,14 +146,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     <div
                       className="aspect-video bg-ink-700 bg-cover bg-center"
                       style={
-                        project.cover_image_url
+                        project.cover_url
                           ? {
-                              backgroundImage: `url(${project.cover_image_url})`,
+                              backgroundImage: `url(${project.cover_url})`,
                             }
                           : undefined
                       }
                     >
-                      {!project.cover_image_url ? (
+                      {!project.cover_url ? (
                         <div className="flex h-full items-center justify-center text-xs uppercase tracking-widest text-zinc-500">
                           {project.category === "gaming"
                             ? "Gaming"

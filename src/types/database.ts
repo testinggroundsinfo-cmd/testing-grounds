@@ -68,7 +68,7 @@ export type Project = {
   development_status: DevelopmentStatus;
   platforms: PlatformKind[];
   tags: string[];
-  cover_image_url: string | null;
+  cover_url: string | null;
   youtube_url: string | null;
   iframe_url: string | null;
   distribution_kind: DistributionKind | null;

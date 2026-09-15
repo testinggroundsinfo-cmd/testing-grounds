@@ -15,7 +15,7 @@ type Project = {
   category: "gaming" | "software";
   title: string;
   description: string;
-  cover_image_url: string | null;
+  cover_url: string | null;
   youtube_url: string | null;
   iframe_url: string | null;
   distribution_kind: DistributionKind | null;
@@ -74,7 +74,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, category, title, description, cover_image_url, youtube_url, iframe_url, distribution_kind, distribution_url",
+      "id, category, title, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url",
     )
     .eq("id", id)
     .maybeSingle();
@@ -109,12 +109,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <p className="text-lg text-zinc-300">{project.description}</p>
         </header>
 
-        {project.cover_image_url ? (
+        {project.cover_url ? (
           <div
             role="img"
             aria-label={`Immagine di copertina di ${project.title}`}
             className="aspect-video overflow-hidden rounded-2xl border border-white/10 bg-ink-800 bg-cover bg-center shadow-panel"
-            style={{ backgroundImage: `url(${project.cover_image_url})` }}
+            style={{ backgroundImage: `url(${project.cover_url})` }}
           />
         ) : null}
 

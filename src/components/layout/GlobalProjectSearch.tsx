@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabaseClient";
 type SearchProject = {
   id: string;
   title: string;
-  cover_image_url: string | null;
+  cover_url: string | null;
   category: "gaming" | "software";
 };
 
@@ -39,19 +39,19 @@ export function GlobalProjectSearch() {
       const [titleSearch, tagSearch, platformSearch] = await Promise.all([
         supabase
           .from("projects")
-          .select("id, title, cover_image_url, category")
+          .select("id, title, cover_url, category")
           .ilike("title", `%${trimmedQuery}%`)
           .eq("is_published", true)
           .limit(8),
         supabase
           .from("projects")
-          .select("id, title, cover_image_url, category")
+          .select("id, title, cover_url, category")
           .contains("tags", [trimmedQuery.toLowerCase()])
           .eq("is_published", true)
           .limit(8),
         supabase
           .from("projects")
-          .select("id, title, cover_image_url, category")
+          .select("id, title, cover_url, category")
           .contains("platforms", [trimmedQuery.toLowerCase()])
           .eq("is_published", true)
           .limit(8),
@@ -159,13 +159,13 @@ export function GlobalProjectSearch() {
                     <div
                       className="h-11 w-14 shrink-0 rounded-md border border-white/10 bg-ink-700 bg-cover bg-center"
                       style={
-                        project.cover_image_url
-                          ? { backgroundImage: `url(${project.cover_image_url})` }
+                        project.cover_url
+                          ? { backgroundImage: `url(${project.cover_url})` }
                           : undefined
                       }
                       aria-hidden
                     >
-                      {!project.cover_image_url ? (
+                      {!project.cover_url ? (
                         <span className="flex h-full items-center justify-center text-[9px] uppercase text-zinc-500">
                           {project.category}
                         </span>

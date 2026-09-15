@@ -18,7 +18,7 @@ type ModProject = {
   compatibility: string;
   mod_file_url: string | null;
   game_cover_url: string | null;
-  cover_image_url: string | null;
+  cover_url: string | null;
 };
 
 export default async function ModdingGamePage({
@@ -32,7 +32,7 @@ export default async function ModdingGamePage({
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, title, slug, description, mod_version, compatibility, mod_file_url, game_cover_url, cover_image_url",
+      "id, title, slug, description, mod_version, compatibility, mod_file_url, game_cover_url, cover_url",
     )
     .eq("project_type", "mod")
     .eq("game_slug", game.slug)
@@ -84,7 +84,7 @@ export default async function ModdingGamePage({
                 <div
                   className="aspect-video bg-cover bg-center"
                   style={{
-                    backgroundImage: `url(${mod.cover_image_url || mod.game_cover_url || game.cover_url})`,
+                    backgroundImage: `url(${mod.cover_url || mod.game_cover_url || game.cover_url})`,
                   }}
                   role="img"
                   aria-label={`Cover della mod ${mod.title}`}

@@ -12,7 +12,7 @@ export type SoftwareProject = {
   description?: string | null;
   platforms?: PlatformKind[] | null;
   tags?: string[] | null;
-  cover_image_url?: string | null;
+  cover_url?: string | null;
   created_at?: string | null;
   development_status?: string | null;
 };
@@ -55,8 +55,8 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
           <span className="absolute left-3 top-3 z-10 rounded-full bg-ink-950/85 px-2.5 py-1 text-xs font-semibold text-accent backdrop-blur">
             {badge === "Trending" ? "🔥 Trending" : badge === "Novità" ? "🆕 Novità" : "★ Popolare"}
           </span>
-          <div className="aspect-video bg-ink-700 bg-cover bg-center" style={project.cover_image_url ? { backgroundImage: `url(${project.cover_image_url})` } : undefined}>
-            {!project.cover_image_url ? <div className="flex h-full items-center justify-center text-xs uppercase tracking-widest text-zinc-500">Software</div> : null}
+          <div className="aspect-video bg-ink-700 bg-cover bg-center" style={project.cover_url ? { backgroundImage: `url(${project.cover_url})` } : undefined}>
+            {!project.cover_url ? <div className="flex h-full items-center justify-center text-xs uppercase tracking-widest text-zinc-500">Software</div> : null}
           </div>
           <div className="space-y-3 p-5">
             <div className="flex items-start justify-between gap-3">

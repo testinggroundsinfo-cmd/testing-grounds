@@ -12,7 +12,7 @@ export type GamingProject = {
   description?: string | null;
   platforms?: PlatformKind[] | null;
   tags?: string[] | null;
-  cover_image_url?: string | null;
+  cover_url?: string | null;
   created_at?: string | null;
   development_status?: string | null;
 };
@@ -84,12 +84,12 @@ function ProjectCard({
         <div
           className="aspect-video bg-ink-700 bg-cover bg-center"
           style={
-            project.cover_image_url
-              ? { backgroundImage: `url(${project.cover_image_url})` }
+            project.cover_url
+              ? { backgroundImage: `url(${project.cover_url})` }
               : undefined
           }
         >
-          {!project.cover_image_url ? (
+          {!project.cover_url ? (
             <div className="flex h-full items-center justify-center text-xs uppercase tracking-widest text-zinc-500">
               Gaming
             </div>
