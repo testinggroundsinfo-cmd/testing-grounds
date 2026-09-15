@@ -12,7 +12,7 @@ export function ProjectGridPlaceholder({
       : ["inbox-zero-kit", "palette-lab", "tab-sorter"];
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
       {samples.map((slug) => (
         <li key={slug}>
           <Link

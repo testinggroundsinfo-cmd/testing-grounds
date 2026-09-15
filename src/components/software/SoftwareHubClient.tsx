@@ -96,12 +96,12 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
       </section>
       <section className="space-y-4">
         <div><p className="text-xs uppercase tracking-widest text-accent">🔥 Software Più Popolari</p><h2 className="mt-1 text-2xl font-semibold">In evidenza</h2></div>
-        {popular.length ? <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{popular.map((project, index) => <Card key={project.id} project={project} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : empty}
+        {popular.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{popular.map((project, index) => <Card key={project.id} project={project} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : empty}
       </section>
       <section className="space-y-4">
         <AdBanner format="horizontal" slotId="software-hub-mid" />
         <div><p className="text-xs uppercase tracking-widest text-accent">🆕 Nuove Uscite / Più Recenti</p><h2 className="mt-1 text-2xl font-semibold">Appena pubblicati</h2></div>
-        {recent.length ? <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{recent.map((project) => <Card key={project.id} project={project} badge="Novità" />)}</ul> : empty}
+        {recent.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{recent.map((project) => <Card key={project.id} project={project} badge="Novità" />)}</ul> : empty}
       </section>
     </div>
   );

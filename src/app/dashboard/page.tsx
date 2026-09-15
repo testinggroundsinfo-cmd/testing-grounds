@@ -174,7 +174,7 @@ export default function DashboardPage() {
                 className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
               />
             </label>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
               {(
                 [
                   ["github_url", "GitHub URL"],

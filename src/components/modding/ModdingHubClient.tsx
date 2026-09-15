@@ -153,12 +153,12 @@ export function ModdingHubClient({
 
       <section className="space-y-4">
         <div><p className="text-xs uppercase tracking-widest text-accent">🔥 Più Popolari</p><h2 className="mt-1 text-2xl font-semibold">Le mod più seguite</h2></div>
-        {popular.length ? <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{popular.map((item, index) => <GameCard key={item.game.slug} item={item} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Nessun gioco corrisponde ai filtri.</p>}
+        {popular.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{popular.map((item, index) => <GameCard key={item.game.slug} item={item} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Nessun gioco corrisponde ai filtri.</p>}
       </section>
 
       <section className="space-y-4">
         <div><p className="text-xs uppercase tracking-widest text-accent">🆕 Aggiunti di Recente</p><h2 className="mt-1 text-2xl font-semibold">Nuove uscite</h2></div>
-        {recent.length ? <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{recent.map((item) => <GameCard key={item.game.slug} item={item} badge="Nuovo" />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Le nuove mod appariranno qui appena pubblicate.</p>}
+        {recent.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{recent.map((item) => <GameCard key={item.game.slug} item={item} badge="Nuovo" />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Le nuove mod appariranno qui appena pubblicate.</p>}
       </section>
     </div>
   );

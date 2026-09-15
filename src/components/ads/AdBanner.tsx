@@ -10,7 +10,7 @@ export function AdBanner({
   return (
     <AdSlot
       placement="footer"
-      className="mb-0 min-h-[100px]"
+      className="mb-0 min-h-[90px] w-full max-w-full"
       aria-label={`Banner pubblicitario ${slotId}`}
     />
   );

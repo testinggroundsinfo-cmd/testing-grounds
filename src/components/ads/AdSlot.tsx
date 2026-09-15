@@ -13,7 +13,7 @@ export function AdSlot({
 
   return (
     <aside
-      className={`relative ad-slot advertisement adsbygoogle flex items-center justify-center border border-dashed border-white/10 bg-ink-800/60 text-xs uppercase tracking-widest text-zinc-500 ${
+      className={`relative ad-slot advertisement adsbygoogle flex max-w-full items-center justify-center overflow-hidden border border-dashed border-white/10 bg-ink-800/60 text-xs uppercase tracking-widest text-zinc-500 ${
         isSidebar ? "min-h-[280px] rounded-xl p-4" : "min-h-[90px] w-full rounded-lg p-3"
       } ${className} ${isSidebar ? "mb-12" : "mb-10"}`}
       aria-label={ariaLabel ?? "Spazio pubblicitario"}
