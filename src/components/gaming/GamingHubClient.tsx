@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { AdBanner } from "@/components/ads/AdBanner";
 import type { PlatformKind } from "@/types/database";
 
@@ -150,6 +151,7 @@ function ProjectCard({
 export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
+  const t = useTranslations("hubs");
   const normalizedQuery = query.trim().toLowerCase();
 
   const visible = useMemo(
@@ -207,8 +209,8 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cerca un gioco..."
-            aria-label="Cerca un gioco"
+            placeholder={t("search")}
+            aria-label={t("search")}
             className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50"
           />
         </div>
@@ -233,7 +235,7 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
       <section className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-accent">
-            🔥 Titoli Più Popolari
+            🔥 {t("popular")}
           </p>
           <h2 className="mt-1 text-2xl font-semibold">
             I giochi più seguiti dalla community
@@ -258,7 +260,7 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
         <AdBanner format="horizontal" slotId="gaming-hub-mid" />
         <div>
           <p className="text-xs uppercase tracking-widest text-accent">
-            🆕 Nuove Uscite / Indie Corner
+            🆕 {t("recent")} / Indie Corner
           </p>
           <h2 className="mt-1 text-2xl font-semibold">
             Appena pubblicati

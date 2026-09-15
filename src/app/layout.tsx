@@ -23,7 +23,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} className="dark">
       <body className="min-h-screen">
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <AdBlockDetector />
           <SiteHeader />
           <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
