@@ -73,11 +73,13 @@ function getErrorMessage(error: unknown) {
 export default function NewProjectPage() {
   const router = useRouter();
   const [category, setCategory] = useState<ProjectCategory>("gaming");
-  const [publicationType, setPublicationType] = useState<"project" | "mod">(
-    "project",
-  );
+  const [publicationType, setPublicationType] = useState<
+    "gaming" | "software" | "mod"
+  >("gaming");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const effectiveCategory =
+    publicationType === "mod" ? "gaming" : category;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -85,15 +87,15 @@ export default function NewProjectPage() {
     setMessage("");
 
     const form = new FormData(event.currentTarget);
-    const effectiveCategory: ProjectCategory =
-      publicationType === "mod" ? "gaming" : category;
+    const submitCategory: ProjectCategory =
+      publicationType === "mod" ? "gaming" : publicationType;
     const title = String(form.get("title") ?? "").trim();
     const slug = slugify(String(form.get("slug") || title));
     const selectedPlatforms = form
       .getAll("platforms")
       .map(String)
       .filter((value): value is PlatformKind =>
-        platformsByCategory[effectiveCategory].some(
+        platformsByCategory[submitCategory].some(
           ([platform]) => platform === value,
         ),
       );
@@ -133,8 +135,8 @@ export default function NewProjectPage() {
       const { error } = await supabase.from("projects").insert({
         // user_id richiesto dall'interfaccia corrisponde a owner_id nello schema.
         owner_id: user.id,
-        category: publicationType === "mod" ? "gaming" : category,
-        project_type: publicationType,
+        category: effectiveCategory,
+        project_type: publicationType === "mod" ? "mod" : "project",
         title,
         slug,
         short_pitch: String(form.get("short_pitch") ?? "").trim(),
@@ -199,11 +201,13 @@ export default function NewProjectPage() {
         <label className="block text-sm">
           Categoria
           <select
-            value={category}
+            value={effectiveCategory}
             disabled={publicationType === "mod"}
-            onChange={(event) =>
-              setCategory(event.target.value as ProjectCategory)
-            }
+            onChange={(event) => {
+              const nextCategory = event.target.value as ProjectCategory;
+              setCategory(nextCategory);
+              setPublicationType(nextCategory);
+            }}
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           >
             <option value="gaming">Gaming</option>
@@ -221,11 +225,13 @@ export default function NewProjectPage() {
                 const nextType = event.target.value as typeof publicationType;
                 setPublicationType(nextType);
                 if (nextType === "mod") setCategory("gaming");
+                else setCategory(nextType);
               })()
             }
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           >
-            <option value="project">Gioco / Software</option>
+            <option value="gaming">Gaming</option>
+            <option value="software">Software</option>
             <option value="mod">Mod per videogioco</option>
           </select>
         </label>
