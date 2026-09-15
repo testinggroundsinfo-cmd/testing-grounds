@@ -9,8 +9,8 @@ export async function middleware(request: NextRequest) {
   const i18nResponse = handleI18nRouting(request);
   const sessionResponse = await updateSession(request);
 
-  i18nResponse.cookies.getAll().forEach(({ name, value, ...options }) => {
-    sessionResponse.cookies.set(name, value, options);
+  i18nResponse.cookies.getAll().forEach(({ name, value }) => {
+    sessionResponse.cookies.set(name, value);
   });
 
   return sessionResponse;

@@ -2,8 +2,7 @@
 
 import { Globe2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import { routing, type AppLocale } from "@/i18n/routing";
 
 const localeLabels: Record<AppLocale, string> = {
@@ -16,16 +15,17 @@ const localeLabels: Record<AppLocale, string> = {
 
 export function LanguageSwitcher() {
   const locale = useLocale() as AppLocale;
-  const router = useRouter();
   const t = useTranslations("nav");
   const [isPending, setIsPending] = useState(false);
 
-  function handleChange(event: ChangeEvent<HTMLSelectElement>) {
-    const nextLocale = event.target.value as AppLocale;
+  function handleLanguageChange(newLocale: string) {
+    if (!routing.locales.includes(newLocale as AppLocale) || newLocale === locale) {
+      return;
+    }
+
     setIsPending(true);
-    document.cookie = `NEXT_LOCALE=${nextLocale};path=/;max-age=31536000;samesite=lax`;
-    router.refresh();
-    window.setTimeout(() => setIsPending(false), 300);
+    document.cookie = `NEXT_LOCALE=${encodeURIComponent(newLocale)}; path=/; max-age=31536000; SameSite=Lax`;
+    window.location.reload();
   }
 
   return (
@@ -34,7 +34,7 @@ export function LanguageSwitcher() {
       <span className="sr-only">{t("language")}</span>
       <select
         value={locale}
-        onChange={handleChange}
+        onChange={(event) => handleLanguageChange(event.target.value)}
         disabled={isPending}
         aria-label={t("language")}
         className="cursor-pointer bg-transparent text-xs outline-none"
