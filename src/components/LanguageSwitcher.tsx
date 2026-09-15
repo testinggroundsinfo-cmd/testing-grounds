@@ -24,8 +24,8 @@ export function LanguageSwitcher() {
     }
 
     setIsPending(true);
-    document.cookie = `NEXT_LOCALE=${encodeURIComponent(newLocale)}; path=/; max-age=31536000; SameSite=Lax`;
-    window.location.href = window.location.pathname;
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+    window.location.reload();
   }
 
   return (
