@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
 import type { ModdingGame } from "@/data/modding-games";
 
 type Activity = { count: number; interactions: number; latest: string };
@@ -26,7 +25,6 @@ export function ModdingHubClient({
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
-  const t = useTranslations("hubs");
   const normalizedQuery = query.trim().toLowerCase();
 
   const filteredGames = useMemo(
@@ -143,7 +141,7 @@ export function ModdingHubClient({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("search")} aria-label={t("search")} className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cerca un gioco..." aria-label="Cerca un gioco" className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" />
           </div>
           <div className="flex flex-wrap gap-2">
             {filters.map((item) => (
@@ -154,12 +152,12 @@ export function ModdingHubClient({
       </section>
 
       <section className="space-y-4">
-        <div><p className="text-xs uppercase tracking-widest text-accent">🔥 {t("popular")}</p><h2 className="mt-1 text-2xl font-semibold">Le mod più seguite</h2></div>
+        <div><p className="text-xs uppercase tracking-widest text-accent">🔥 Più Popolari</p><h2 className="mt-1 text-2xl font-semibold">Le mod più seguite</h2></div>
         {popular.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{popular.map((item, index) => <GameCard key={item.game.slug} item={item} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Nessun gioco corrisponde ai filtri.</p>}
       </section>
 
       <section className="space-y-4">
-        <div><p className="text-xs uppercase tracking-widest text-accent">🆕 {t("recent")}</p><h2 className="mt-1 text-2xl font-semibold">Nuove uscite</h2></div>
+        <div><p className="text-xs uppercase tracking-widest text-accent">🆕 Aggiunti di Recente</p><h2 className="mt-1 text-2xl font-semibold">Nuove uscite</h2></div>
         {recent.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{recent.map((item) => <GameCard key={item.game.slug} item={item} badge="Nuovo" />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Le nuove mod appariranno qui appena pubblicate.</p>}
       </section>
     </div>

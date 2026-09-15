@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { AdBlockDetector } from "@/components/ads/AdBlockDetector";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { getLocale, getMessages } from "next-intl/server";
-import { NextIntlClientProvider } from "next-intl";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,25 +10,20 @@ export const metadata: Metadata = {
     "Piattaforma gratuita per il beta testing e il playtesting di giochi indie e software.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-
   return (
-    <html lang={locale} className="dark">
+    <html lang="it" className="dark">
       <body className="min-h-screen">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <AdBlockDetector />
-          <SiteHeader />
-          <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            {children}
-          </main>
-          <SiteFooter />
-        </NextIntlClientProvider>
+        <AdBlockDetector />
+        <SiteHeader />
+        <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          {children}
+        </main>
+        <SiteFooter />
       </body>
     </html>
   );

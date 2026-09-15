@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
 import type { PlatformKind } from "@/types/database";
 import { AdBanner } from "@/components/ads/AdBanner";
 
@@ -41,7 +40,6 @@ function getCategory(project: SoftwareProject): Exclude<Filter, "Tutti"> {
 export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
-  const t = useTranslations("hubs");
   const visible = useMemo(() => projects.filter((project) => {
     const matchesQuery = !query.trim() ||
       `${project.title ?? ""} ${project.short_pitch ?? ""} ${(project.tags ?? []).join(" ")}`
@@ -93,16 +91,16 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
         <Link href="/dashboard/projects/new?type=software" className="mt-6 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 hover:bg-accent-dim">Pubblica il tuo Software</Link>
       </header>
       <section className="space-y-4">
-        <div className="relative max-w-md"><Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("search")} aria-label={t("search")} className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" /></div>
+        <div className="relative max-w-md"><Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cerca software..." aria-label="Cerca software" className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" /></div>
         <div className="flex flex-wrap gap-2">{filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3 py-1.5 text-xs ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{item}</button>)}</div>
       </section>
       <section className="space-y-4">
-        <div><p className="text-xs uppercase tracking-widest text-accent">🔥 {t("popular")}</p><h2 className="mt-1 text-2xl font-semibold">In evidenza</h2></div>
+        <div><p className="text-xs uppercase tracking-widest text-accent">🔥 Software Più Popolari</p><h2 className="mt-1 text-2xl font-semibold">In evidenza</h2></div>
         {popular.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{popular.map((project, index) => <Card key={project.id} project={project} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : empty}
       </section>
       <section className="space-y-4">
         <AdBanner format="horizontal" slotId="software-hub-mid" />
-        <div><p className="text-xs uppercase tracking-widest text-accent">🆕 {t("recent")}</p><h2 className="mt-1 text-2xl font-semibold">Appena pubblicati</h2></div>
+        <div><p className="text-xs uppercase tracking-widest text-accent">🆕 Nuove Uscite / Più Recenti</p><h2 className="mt-1 text-2xl font-semibold">Appena pubblicati</h2></div>
         {recent.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{recent.map((project) => <Card key={project.id} project={project} badge="Novità" />)}</ul> : empty}
       </section>
     </div>
