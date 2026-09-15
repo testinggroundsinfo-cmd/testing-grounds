@@ -6,8 +6,62 @@ export type ModdingGame = {
   cover_url: string;
 };
 
-const cover = (name: string) =>
-  `https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=85&ixlib=rb-4.1.0&txt=${encodeURIComponent(name)}`;
+const steamCover = (appId: number) =>
+  `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/library_600x900.jpg`;
+
+const coverUrls: Record<string, string> = {
+  // Minecraft is not distributed through Steam; use Mojang's official key art.
+  minecraft:
+    "https://www.minecraft.net/content/dam/games/minecraft/key-art/Java-Edition-Key-Art.jpg",
+  skyrim: steamCover(489830),
+  "grand-theft-auto-v": steamCover(271590),
+  "the-witcher-3": steamCover(292030),
+  "fallout-4": steamCover(377160),
+  "cyberpunk-2077": steamCover(1091500),
+  "stardew-valley": steamCover(413150),
+  terraria: steamCover(105600),
+  "red-dead-redemption-2": steamCover(1174180),
+  "elden-ring": steamCover(1245620),
+  "baldurs-gate-3": steamCover(1086940),
+  "monster-hunter-world": steamCover(582010),
+  "assetto-corsa": steamCover(244210),
+  "the-sims-4": steamCover(1222670),
+  "mount-and-blade-ii-bannerlord": steamCover(261550),
+  "cities-skylines": steamCover(255710),
+  "civilization-vi": steamCover(289070),
+  rimworld: steamCover(294100),
+  factorio: steamCover(427520),
+  "garrys-mod": steamCover(4000),
+  "hogwarts-legacy": steamCover(990080),
+  starfield: steamCover(1716740),
+  "resident-evil-4-remake": steamCover(2050650),
+  "dark-souls-iii": steamCover(374320),
+  "ark-survival-evolved": steamCover(346110),
+  "left-4-dead-2": steamCover(550),
+  "payday-2": steamCover(218620),
+  stalker: steamCover(4500),
+  doom: steamCover(379720),
+  "half-life-2": steamCover(220),
+  subnautica: steamCover(264710),
+  valheim: steamCover(892970),
+  "kerbal-space-program": steamCover(220200),
+  palworld: steamCover(1623730),
+  "manor-lords": steamCover(1363080),
+  "street-fighter-6": steamCover(1364780),
+  "tekken-8": steamCover(1778820),
+  "dragon-ball-xenoverse-2": steamCover(454640),
+  "ea-sports-fc-24": steamCover(2195250),
+  "nba-2k": steamCover(2338770),
+  "marvels-spider-man": steamCover(1817190),
+  "god-of-war": steamCover(1593500),
+  sekiro: steamCover(814380),
+  "devil-may-cry-5": steamCover(601150),
+  "portal-2": steamCover(620),
+  "euro-truck-simulator-2": steamCover(227300),
+  "lethal-company": steamCover(1966720),
+  "helldivers-2": steamCover(553850),
+  "dying-light": steamCover(239140),
+};
 
 const games = [
   ["minecraft", "Minecraft"],
@@ -66,7 +120,7 @@ export const moddingGames: ModdingGame[] = games.map(([slug, name], index) => ({
   name,
   slug,
   category: "game",
-  cover_url: cover(name),
+  cover_url: coverUrls[slug],
 }));
 
 export const moddingGameBySlug = new Map(
