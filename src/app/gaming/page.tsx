@@ -4,15 +4,19 @@ import { AppShell } from "@/components/layout/AppShell";
 import { createClient } from "@/lib/supabase/server";
 import type { PlatformKind } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+
 type GamingProject = {
   id: string;
-  title: string;
-  short_pitch: string;
-  platforms: PlatformKind[];
-  tags: string[];
+  title?: string | null;
+  short_pitch?: string | null;
+  platforms?: PlatformKind[] | null;
+  tags?: string[] | null;
   cover_image_url: string | null;
-  report_count: number;
-  created_at: string;
+  report_count?: number | null;
+  views?: number | null;
+  downloads?: number | null;
+  created_at?: string | null;
 };
 
 const platformLabels: Record<PlatformKind, string> = {
@@ -70,16 +74,16 @@ function ProjectCard({
                 Playtest
               </p>
               <h2 className="mt-1 text-lg font-medium text-white group-hover:text-accent">
-                {project.title}
+                {project.title || "Progetto senza titolo"}
               </h2>
             </div>
             <ArrowRight className="h-5 w-5 shrink-0 text-zinc-500 group-hover:text-accent" />
           </div>
           <p className="line-clamp-2 text-sm text-zinc-400">
-            {project.short_pitch}
+            {project.short_pitch || "Nessuna descrizione disponibile."}
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {project.platforms.map((platform) => (
+            {(project.platforms ?? []).map((platform) => (
               <span
                 key={platform}
                 className="rounded-full bg-white/5 px-2.5 py-1 text-xs text-zinc-300"
@@ -87,7 +91,7 @@ function ProjectCard({
                 {platformLabels[platform] ?? platform}
               </span>
             ))}
-            {project.tags.slice(0, 2).map((tag) => (
+            {(project.tags ?? []).slice(0, 2).map((tag) => (
               <span
                 key={tag}
                 className="rounded-full bg-accent-glow px-2.5 py-1 text-xs text-accent"
@@ -103,28 +107,49 @@ function ProjectCard({
 }
 
 export default async function GamingPage() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("projects")
-    .select(
-      "id, title, short_pitch, platforms, tags, cover_image_url, report_count, created_at",
-    )
-    .eq("category", "gaming")
-    .eq("project_type", "project")
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
+  let projects: GamingProject[] = [];
 
-  if (error) {
-    throw new Error("Impossibile caricare i progetti gaming.");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("projects")
+      .select(
+        "id, title, short_pitch, platforms, tags, cover_image_url, report_count, created_at",
+      )
+      .eq("category", "gaming")
+      .eq("project_type", "project")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Gaming projects query failed:", error);
+    } else if (Array.isArray(data)) {
+      projects = (data as unknown[]).filter(
+        (project): project is GamingProject =>
+          typeof project === "object" &&
+          project !== null &&
+          "id" in project &&
+          typeof project.id === "string",
+      );
+    }
+  } catch (error) {
+    console.error("Unable to load gaming projects:", error);
   }
 
-  const projects = (data ?? []) as GamingProject[];
-  // report_count è il contatore di interazioni disponibile nello schema attuale.
+  // I contatori opzionali vengono trattati come zero quando non valorizzati.
   const popular = [...projects]
-    .sort((a, b) => b.report_count - a.report_count)
+    .sort(
+      (a, b) =>
+        (b.views ?? 0) +
+        (b.downloads ?? 0) +
+        (b.report_count ?? 0) -
+        ((a.views ?? 0) + (a.downloads ?? 0) + (a.report_count ?? 0)),
+    )
     .slice(0, 6);
   const recent = [...projects]
-    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .sort((a, b) =>
+      (b.created_at ?? "").localeCompare(a.created_at ?? ""),
+    )
     .slice(0, 6);
   const emptyMessage = (
     <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
