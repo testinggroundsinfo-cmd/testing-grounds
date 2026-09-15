@@ -12,6 +12,38 @@ import type {
   ProjectCategory,
 } from "@/types/database";
 
+type FormCategory = "gaming" | "software" | "modding";
+type PublicationType =
+  | "full_game"
+  | "demo"
+  | "asset_pack"
+  | "mod"
+  | "plugin"
+  | "preset"
+  | "desktop_app"
+  | "web_app"
+  | "browser_extension"
+  | "tool";
+
+const publicationTypes: Record<FormCategory, readonly [PublicationType, string][]> = {
+  gaming: [
+    ["full_game", "Videogioco completo"],
+    ["demo", "Demo / Prototype"],
+    ["asset_pack", "Asset / Resource Pack"],
+  ],
+  modding: [
+    ["mod", "Mod per videogioco"],
+    ["plugin", "Plugin / Addon"],
+    ["preset", "Preset / Config"],
+  ],
+  software: [
+    ["desktop_app", "Applicazione Desktop"],
+    ["web_app", "Web App / SaaS"],
+    ["browser_extension", "Estensione Browser"],
+    ["tool", "Tool / Script"],
+  ],
+};
+
 const platformsByCategory: Record<
   ProjectCategory,
   readonly [PlatformKind, string][]
@@ -80,19 +112,15 @@ function getErrorMessage(error: unknown) {
 
 export default function NewProjectPage() {
   const router = useRouter();
-  const [category, setCategory] = useState<ProjectCategory>("gaming");
-  const [publicationType, setPublicationType] = useState<
-    "gaming" | "software" | "mod"
-  >("gaming");
+  const [category, setCategory] = useState<FormCategory>("gaming");
+  const [publicationType, setPublicationType] =
+    useState<PublicationType>("full_game");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const effectiveCategory =
-    publicationType === "mod" ? "gaming" : category;
-
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("type") === "mod") {
       setPublicationType("mod");
-      setCategory("gaming");
+      setCategory("modding");
     }
   }, []);
 
@@ -103,7 +131,7 @@ export default function NewProjectPage() {
 
     const form = new FormData(event.currentTarget);
     const submitCategory: ProjectCategory =
-      publicationType === "software" ? "software" : "gaming";
+      category === "software" ? "software" : "gaming";
     const title = String(form.get("title") ?? "").trim();
     const shortPitch = String(form.get("short_pitch") ?? "").trim();
     const description = String(form.get("description") ?? "").trim();
@@ -139,7 +167,8 @@ export default function NewProjectPage() {
       return;
     }
 
-    if (publicationType === "mod" && !selectedGame) {
+    const isModding = category === "modding";
+    if (isModding && !selectedGame) {
       setMessage("Seleziona il gioco di destinazione della mod.");
       setSubmitting(false);
       return;
@@ -170,18 +199,28 @@ export default function NewProjectPage() {
 
       const { error } = await supabase.from("projects").insert({
         owner_id: user.id,
-        category: effectiveCategory || "gaming",
-        project_type: publicationType === "mod" ? "mod" : "project",
+        category: submitCategory,
+        project_type: isModding ? "mod" : "project",
         title,
         slug,
         description: `${shortPitch}\n\n${description}`.trim(),
         // status -> development_status
         development_status: developmentStatus,
         platforms,
-        tags: String(form.get("tags") ?? "")
+        tags: [
+          ...String(form.get("tags") ?? "")
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
+          ...(publicationTypes[category]
+            .find(([type]) => type === publicationType)?.[1]
+            ? [
+                publicationTypes[category].find(
+                  ([type]) => type === publicationType,
+                )?.[1] as string,
+              ]
+            : []),
+        ],
         // cover_url -> cover_image_url
         cover_image_url: optionalValue(form, "cover_url"),
         youtube_url: optionalValue(form, "youtube_url"),
@@ -190,20 +229,20 @@ export default function NewProjectPage() {
         distribution_kind: selectedDistribution as DistributionKind | null,
         distribution_url: optionalValue(form, "distribution_link"),
         is_published: form.get("is_published") === "on",
-        game_slug: publicationType === "mod" ? selectedGame?.slug : null,
-        game_title: publicationType === "mod" ? selectedGame?.name : null,
+        game_slug: isModding ? selectedGame?.slug : null,
+        game_title: isModding ? selectedGame?.name : null,
         mod_version:
-          publicationType === "mod" ? optionalValue(form, "mod_version") : null,
+          isModding ? optionalValue(form, "mod_version") : null,
         compatibility:
-          publicationType === "mod"
+          isModding
             ? optionalValue(form, "compatibility")
             : null,
         game_cover_url:
-          publicationType === "mod"
+          isModding
             ? optionalValue(form, "game_cover_url") || selectedGame?.cover_url
             : null,
         mod_file_url:
-          publicationType === "mod"
+          isModding
             ? optionalValue(form, "mod_file_url")
             : null,
       });
@@ -232,17 +271,17 @@ export default function NewProjectPage() {
         <label className="block text-sm">
           Categoria
           <select
-            value={effectiveCategory}
-            disabled={publicationType === "mod"}
+            value={category}
             onChange={(event) => {
-              const nextCategory = event.target.value as ProjectCategory;
-              setCategory(nextCategory);
-              setPublicationType(nextCategory);
-            }}
+                const nextCategory = event.target.value as FormCategory;
+                setCategory(nextCategory);
+                setPublicationType(publicationTypes[nextCategory][0][0]);
+              }}
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           >
             <option value="gaming">Gaming</option>
-            <option value="software">Software</option>
+            <option value="software">App &amp; Software</option>
+            <option value="modding">Modding</option>
           </select>
         </label>
 
@@ -253,21 +292,21 @@ export default function NewProjectPage() {
             value={publicationType}
             onChange={(event) =>
               (() => {
-                const nextType = event.target.value as typeof publicationType;
+                const nextType = event.target.value as PublicationType;
                 setPublicationType(nextType);
-                if (nextType === "mod") setCategory("gaming");
-                else setCategory(nextType);
               })()
             }
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           >
-            <option value="gaming">Gaming</option>
-            <option value="software">Software</option>
-            <option value="mod">Mod per videogioco</option>
+            {publicationTypes[category].map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
 
-        {publicationType === "mod" ? (
+        {category === "modding" || publicationType === "mod" ? (
           <div className="space-y-4 rounded-xl border border-accent/20 bg-accent/5 p-4">
             <p className="text-sm font-medium text-accent">Dettagli mod</p>
             <label className="block text-sm">
@@ -391,7 +430,8 @@ export default function NewProjectPage() {
         <fieldset className="space-y-2">
           <legend className="text-sm">Piattaforme</legend>
           <div className="grid gap-2 sm:grid-cols-2">
-            {platformsByCategory[category].map(([value, label]) => (
+            {platformsByCategory[category === "software" ? "software" : "gaming"].map(
+              ([value, label]) => (
               <label key={value} className="text-sm">
                 <input
                   type="checkbox"
@@ -401,7 +441,8 @@ export default function NewProjectPage() {
                 />
                 {label}
               </label>
-            ))}
+              ),
+            )}
           </div>
         </fieldset>
 
