@@ -2,7 +2,7 @@ export type ModdingGame = {
   id: string;
   name: string;
   slug: string;
-  category: "game";
+  category: "RPG" | "Action" | "Strategy" | "Simulation" | "Open World";
   cover_url: string;
 };
 
@@ -115,11 +115,63 @@ const games = [
   ["dying-light", "Dying Light"],
 ] as const;
 
+const gameCategories: Record<string, ModdingGame["category"]> = {
+  minecraft: "Simulation",
+  skyrim: "RPG",
+  "grand-theft-auto-v": "Open World",
+  "the-witcher-3": "RPG",
+  "fallout-4": "RPG",
+  "cyberpunk-2077": "Open World",
+  "stardew-valley": "Simulation",
+  terraria: "Simulation",
+  "red-dead-redemption-2": "Open World",
+  "elden-ring": "RPG",
+  "baldurs-gate-3": "RPG",
+  "monster-hunter-world": "Action",
+  "assetto-corsa": "Simulation",
+  "the-sims-4": "Simulation",
+  "mount-and-blade-ii-bannerlord": "Strategy",
+  "cities-skylines": "Simulation",
+  "civilization-vi": "Strategy",
+  rimworld: "Strategy",
+  factorio: "Strategy",
+  "garrys-mod": "Simulation",
+  "hogwarts-legacy": "RPG",
+  starfield: "RPG",
+  "resident-evil-4-remake": "Action",
+  "dark-souls-iii": "RPG",
+  "ark-survival-evolved": "Simulation",
+  "left-4-dead-2": "Action",
+  "payday-2": "Action",
+  stalker: "Action",
+  doom: "Action",
+  "half-life-2": "Action",
+  subnautica: "Simulation",
+  valheim: "Simulation",
+  "kerbal-space-program": "Simulation",
+  palworld: "Simulation",
+  "manor-lords": "Strategy",
+  "street-fighter-6": "Action",
+  "tekken-8": "Action",
+  "dragon-ball-xenoverse-2": "Action",
+  "ea-sports-fc-24": "Simulation",
+  "nba-2k": "Simulation",
+  "marvels-spider-man": "Action",
+  "god-of-war": "Action",
+  sekiro: "Action",
+  "devil-may-cry-5": "Action",
+  "portal-2": "Action",
+  "euro-truck-simulator-2": "Simulation",
+  "lethal-company": "Action",
+  "helldivers-2": "Action",
+  "dying-light": "Action",
+};
+
 export const moddingGames: ModdingGame[] = games.map(([slug, name], index) => ({
   id: `mod-game-${index + 1}`,
   name,
   slug,
-  category: "game",
+  category: gameCategories[slug] ?? "Action",
   cover_url: coverUrls[slug],
 }));
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { requireBrowserUser } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
@@ -80,6 +80,13 @@ export default function NewProjectPage() {
   const [submitting, setSubmitting] = useState(false);
   const effectiveCategory =
     publicationType === "mod" ? "gaming" : category;
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("type") === "mod") {
+      setPublicationType("mod");
+      setCategory("gaming");
+    }
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
