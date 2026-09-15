@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 
 type ModActivity = {
   game_slug: string | null;
-  report_count?: number | null;
   created_at?: string | null;
 };
 
@@ -15,7 +14,7 @@ export default async function ModdingPage() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("projects")
-      .select("game_slug, report_count, created_at")
+      .select("game_slug, created_at")
       .eq("project_type", "mod")
       .eq("is_published", true);
     if (!error && Array.isArray(data)) modRows = data as ModActivity[];
@@ -28,7 +27,7 @@ export default async function ModdingPage() {
     if (!row.game_slug) continue;
     const current = activity.get(row.game_slug) ?? { count: 0, interactions: 0, latest: "" };
     current.count += 1;
-    current.interactions += row.report_count ?? 0;
+    current.interactions = current.count;
     current.latest = current.latest > (row.created_at ?? "") ? current.latest : row.created_at ?? "";
     activity.set(row.game_slug, current);
   }

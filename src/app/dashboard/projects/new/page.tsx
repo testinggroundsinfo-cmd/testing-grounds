@@ -97,6 +97,8 @@ export default function NewProjectPage() {
     const submitCategory: ProjectCategory =
       publicationType === "mod" ? "gaming" : publicationType;
     const title = String(form.get("title") ?? "").trim();
+    const shortPitch = String(form.get("short_pitch") ?? "").trim();
+    const description = String(form.get("description") ?? "").trim();
     const slug = slugify(String(form.get("slug") || title));
     const selectedPlatforms = form
       .getAll("platforms")
@@ -146,8 +148,7 @@ export default function NewProjectPage() {
         project_type: publicationType === "mod" ? "mod" : "project",
         title,
         slug,
-        short_pitch: String(form.get("short_pitch") ?? "").trim(),
-        description: String(form.get("description") ?? "").trim(),
+        description: `${shortPitch}\n\n${description}`.trim(),
         // status -> development_status
         development_status: String(
           form.get("status") || "alpha",

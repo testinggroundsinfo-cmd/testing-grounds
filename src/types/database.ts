@@ -64,7 +64,6 @@ export type Project = {
   category: ProjectCategory;
   title: string;
   slug: string;
-  short_pitch: string;
   description: string;
   development_status: DevelopmentStatus;
   platforms: PlatformKind[];

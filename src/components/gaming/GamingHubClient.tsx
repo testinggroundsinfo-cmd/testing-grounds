@@ -9,11 +9,10 @@ import type { PlatformKind } from "@/types/database";
 export type GamingProject = {
   id: string;
   title?: string | null;
-  short_pitch?: string | null;
+  description?: string | null;
   platforms?: PlatformKind[] | null;
   tags?: string[] | null;
   cover_image_url?: string | null;
-  report_count?: number | null;
   created_at?: string | null;
   development_status?: string | null;
 };
@@ -67,8 +66,6 @@ function ProjectCard({
   project: GamingProject;
   badge: Badge;
 }) {
-  const interactions = project.report_count ?? 0;
-
   return (
     <li>
       <Link
@@ -111,7 +108,7 @@ function ProjectCard({
             <ArrowRight className="h-5 w-5 shrink-0 text-zinc-500 group-hover:text-accent" />
           </div>
           <p className="line-clamp-2 text-sm text-zinc-400">
-            {project.short_pitch || "Nessuna descrizione disponibile."}
+            {project.description || "Nessuna descrizione disponibile."}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {(project.platforms ?? []).map((platform) => (
@@ -134,11 +131,11 @@ function ProjectCard({
           <div className="flex items-center gap-4 border-t border-white/10 pt-3 text-xs text-zinc-400">
             <span className="inline-flex items-center gap-1">
               <Download className="h-3.5 w-3.5" />
-              {interactions} interazioni
+              Dati della community
             </span>
             <span className="inline-flex items-center gap-1">
               <Star className="h-3.5 w-3.5 text-accent" />
-              {Math.min(5, 3 + interactions / 10).toFixed(1)}
+              Indie
             </span>
           </div>
         </div>
@@ -156,7 +153,7 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
     () =>
       projects.filter((project) => {
         const searchable = `${project.title ?? ""} ${
-          project.short_pitch ?? ""
+          project.description ?? ""
         } ${(project.tags ?? []).join(" ")}`.toLowerCase();
         return (
           (!normalizedQuery || searchable.includes(normalizedQuery)) &&
@@ -167,7 +164,9 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
   );
 
   const popular = [...visible]
-    .sort((a, b) => (b.report_count ?? 0) - (a.report_count ?? 0))
+    .sort((a, b) =>
+      (b.created_at ?? "").localeCompare(a.created_at ?? ""),
+    )
     .slice(0, 6);
   const recent = [...visible]
     .sort((a, b) =>

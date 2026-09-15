@@ -13,7 +13,6 @@ type ModProject = {
   id: string;
   title: string;
   slug: string;
-  short_pitch: string;
   description: string;
   mod_version: string;
   compatibility: string;
@@ -33,7 +32,7 @@ export default async function ModdingGamePage({
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, title, slug, short_pitch, description, mod_version, compatibility, mod_file_url, game_cover_url, cover_image_url",
+      "id, title, slug, description, mod_version, compatibility, mod_file_url, game_cover_url, cover_image_url",
     )
     .eq("project_type", "mod")
     .eq("game_slug", game.slug)
@@ -98,7 +97,9 @@ export default async function ModdingGamePage({
                         v{mod.mod_version}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-zinc-400">{mod.short_pitch}</p>
+                    <p className="mt-2 line-clamp-2 text-sm text-zinc-400">
+                      {mod.description}
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
                     <span className="rounded-full bg-white/5 px-2.5 py-1">

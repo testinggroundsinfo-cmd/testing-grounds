@@ -9,11 +9,10 @@ import { AdBanner } from "@/components/ads/AdBanner";
 export type SoftwareProject = {
   id: string;
   title?: string | null;
-  short_pitch?: string | null;
+  description?: string | null;
   platforms?: PlatformKind[] | null;
   tags?: string[] | null;
   cover_image_url?: string | null;
-  report_count?: number | null;
   created_at?: string | null;
   development_status?: string | null;
 };
@@ -42,15 +41,14 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
   const [filter, setFilter] = useState<Filter>("Tutti");
   const visible = useMemo(() => projects.filter((project) => {
     const matchesQuery = !query.trim() ||
-      `${project.title ?? ""} ${project.short_pitch ?? ""} ${(project.tags ?? []).join(" ")}`
+      `${project.title ?? ""} ${project.description ?? ""} ${(project.tags ?? []).join(" ")}`
         .toLowerCase().includes(query.trim().toLowerCase());
     return matchesQuery && (filter === "Tutti" || getCategory(project) === filter);
   }), [filter, projects, query]);
-  const popular = [...visible].sort((a, b) => (b.report_count ?? 0) - (a.report_count ?? 0)).slice(0, 6);
+  const popular = [...visible].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")).slice(0, 6);
   const recent = [...visible].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")).slice(0, 6);
 
   function Card({ project, badge }: { project: SoftwareProject; badge: "Trending" | "Popolare" | "Novità" }) {
-    const interactions = project.report_count ?? 0;
     return (
       <li>
         <Link href={`/projects/${project.id}`} className="group relative block h-full overflow-hidden rounded-2xl border border-white/10 bg-ink-800 transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-panel">
@@ -65,14 +63,14 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
               <div><p className="text-xs uppercase tracking-widest text-zinc-500">{getCategory(project)}</p><h3 className="mt-1 text-lg font-medium text-white group-hover:text-accent">{project.title || "Software senza titolo"}</h3></div>
               <ArrowRight className="h-5 w-5 shrink-0 text-zinc-500 group-hover:text-accent" />
             </div>
-            <p className="line-clamp-2 text-sm text-zinc-400">{project.short_pitch || "Nessuna descrizione disponibile."}</p>
+            <p className="line-clamp-2 text-sm text-zinc-400">{project.description || "Nessuna descrizione disponibile."}</p>
             <div className="flex flex-wrap gap-1.5">
               {(project.platforms ?? []).map((platform) => <span key={platform} className="rounded-full bg-white/5 px-2.5 py-1 text-xs text-zinc-300">{platformLabels[platform] ?? platform}</span>)}
               {(project.tags ?? []).slice(0, 2).map((tag) => <span key={tag} className="rounded-full bg-accent-glow px-2.5 py-1 text-xs text-accent">#{tag}</span>)}
             </div>
             <div className="flex items-center gap-4 border-t border-white/10 pt-3 text-xs text-zinc-400">
-              <span className="inline-flex items-center gap-1"><Download className="h-3.5 w-3.5" />{interactions} download</span>
-              <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 text-accent" />{Math.min(5, 3 + interactions / 10).toFixed(1)}</span>
+              <span className="inline-flex items-center gap-1"><Download className="h-3.5 w-3.5" />Community</span>
+              <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 text-accent" />Indie</span>
               <span>{project.development_status || "Release"}</span>
             </div>
           </div>

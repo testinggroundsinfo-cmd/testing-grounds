@@ -14,7 +14,6 @@ type Project = {
   id: string;
   category: "gaming" | "software";
   title: string;
-  short_pitch: string;
   description: string;
   cover_image_url: string | null;
   youtube_url: string | null;
@@ -75,7 +74,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, category, title, short_pitch, description, cover_image_url, youtube_url, iframe_url, distribution_kind, distribution_url",
+      "id, category, title, description, cover_image_url, youtube_url, iframe_url, distribution_kind, distribution_url",
     )
     .eq("id", id)
     .maybeSingle();
@@ -107,7 +106,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {project.title}
           </h1>
-          <p className="text-lg text-zinc-300">{project.short_pitch}</p>
+          <p className="text-lg text-zinc-300">{project.description}</p>
         </header>
 
         {project.cover_image_url ? (

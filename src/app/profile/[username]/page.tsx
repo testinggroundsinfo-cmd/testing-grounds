@@ -23,7 +23,7 @@ type PublishedProject = {
   title: string;
   category: ProjectCategory;
   slug: string;
-  short_pitch: string;
+  description: string;
   platforms: PlatformKind[];
   cover_image_url: string | null;
 };
@@ -56,7 +56,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { data: projects, error: projectsError } = await supabase
     .from("projects")
     .select(
-      "id, title, category, slug, short_pitch, platforms, cover_image_url",
+      "id, title, category, slug, description, platforms, cover_image_url",
     )
     .eq("owner_id", profile.id)
     .eq("is_published", true)
@@ -173,7 +173,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                         </h3>
                       </div>
                       <p className="line-clamp-2 text-sm text-zinc-400">
-                        {project.short_pitch}
+                        {project.description}
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {project.platforms.length > 0 ? (
