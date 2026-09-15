@@ -22,8 +22,20 @@ const emptyProfile: ProfileForm = {
   website_url: "",
 };
 
-function errorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
+function fallbackUsername(userEmail: string | undefined, userId: string) {
+  const localPart = userEmail?.split("@")[0] ?? "";
+  const normalized = localPart.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+  const username = normalized.slice(0, 24);
+  return username.length >= 3
+    ? username
+    : `user_${userId.replace(/-/g, "").slice(0, 8)}`;
+}
+
+function saveErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return `Impossibile salvare il profilo: ${error.message}`;
+  }
+  return "Impossibile salvare il profilo. Controlla la connessione e riprova.";
 }
 
 export default function DashboardPage() {
@@ -43,32 +55,32 @@ export default function DashboardPage() {
           error: authError,
         } = await supabase.auth.getUser();
         if (authError) throw authError;
-        if (!user) throw new Error("Devi accedere per modificare il profilo.");
+        if (!user) return;
 
-        const { data, error: profileError } = await supabase
+        const { data } = await supabase
           .from("profiles")
           .select(
-            "display_name, bio, avatar_url, github_url, twitter_url, website_url",
+            "username, display_name, bio, avatar_url, github_url, twitter_url, website_url",
           )
           .eq("id", user.id)
           .maybeSingle();
-        if (profileError) throw profileError;
-        if (active && data) {
+        const metadata = user.user_metadata ?? {};
+        const metadataName =
+          (typeof metadata.full_name === "string" && metadata.full_name) ||
+          (typeof metadata.display_name === "string" && metadata.display_name) ||
+          "";
+        if (active) {
           setProfile({
-            display_name: data.display_name ?? "",
-            bio: data.bio ?? "",
-            avatar_url: data.avatar_url ?? "",
-            github_url: data.github_url ?? "",
-            twitter_url: data.twitter_url ?? "",
-            website_url: data.website_url ?? "",
+            display_name: data?.display_name || metadataName,
+            bio: data?.bio ?? "",
+            avatar_url: data?.avatar_url ?? "",
+            github_url: data?.github_url ?? "",
+            twitter_url: data?.twitter_url ?? "",
+            website_url: data?.website_url ?? "",
           });
         }
-      } catch (loadError) {
-        if (active) {
-          setError(
-            errorMessage(loadError, "Impossibile caricare il profilo."),
-          );
-        }
+      } catch {
+        // Il form resta utilizzabile anche se il profilo non è ancora presente.
       } finally {
         if (active) setLoading(false);
       }
@@ -93,21 +105,35 @@ export default function DashboardPage() {
       if (authError) throw authError;
       if (!user) throw new Error("Devi accedere per salvare il profilo.");
 
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .maybeSingle();
+      const metadata = user.user_metadata ?? {};
+      const metadataName =
+        (typeof metadata.full_name === "string" && metadata.full_name) ||
+        (typeof metadata.display_name === "string" && metadata.display_name) ||
+        "";
+      const displayName = profile.display_name.trim() || metadataName;
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({
-          display_name: profile.display_name.trim(),
+        .upsert({
+          id: user.id,
+          username:
+            existingProfile?.username ||
+            fallbackUsername(user.email, user.id),
+          display_name: displayName || "Tester",
           bio: profile.bio.trim() || null,
           avatar_url: profile.avatar_url.trim() || null,
           github_url: profile.github_url.trim() || null,
           twitter_url: profile.twitter_url.trim() || null,
           website_url: profile.website_url.trim() || null,
-        })
-        .eq("id", user.id);
+        }, { onConflict: "id" });
       if (updateError) throw updateError;
       setMessage("Profilo aggiornato correttamente.");
     } catch (saveError) {
-      setError(errorMessage(saveError, "Impossibile salvare il profilo."));
+      setError(saveErrorMessage(saveError));
     } finally {
       setSaving(false);
     }
@@ -150,7 +176,6 @@ export default function DashboardPage() {
               <input
                 value={profile.display_name}
                 onChange={(event) => updateField("display_name", event.target.value)}
-                required
                 maxLength={80}
                 className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
               />
