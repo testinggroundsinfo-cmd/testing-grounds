@@ -20,7 +20,7 @@ export async function ensureProfile(supabase: BrowserClient, user: User) {
   const fromMeta = (user.user_metadata?.username as string | undefined) ?? "";
   const fromEmail = user.email?.split("@")[0] ?? "tester";
   const username = sanitizeUsername(fromMeta || fromEmail);
-  const displayName =
+  const fullName =
     (user.user_metadata?.full_name as string | undefined) ||
     (user.user_metadata?.name as string | undefined) ||
     username;
@@ -28,7 +28,7 @@ export async function ensureProfile(supabase: BrowserClient, user: User) {
   const { error } = await supabase.from("profiles").insert({
     id: user.id,
     username,
-    display_name: displayName,
+    full_name: fullName,
     is_developer: true,
     is_tester: true,
   });

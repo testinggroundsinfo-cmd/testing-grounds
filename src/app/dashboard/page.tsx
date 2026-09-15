@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
 
 type ProfileForm = {
-  display_name: string;
+  full_name: string;
   bio: string;
   avatar_url: string;
   github_url: string;
@@ -14,22 +14,13 @@ type ProfileForm = {
 };
 
 const emptyProfile: ProfileForm = {
-  display_name: "",
+  full_name: "",
   bio: "",
   avatar_url: "",
   github_url: "",
   twitter_url: "",
   website_url: "",
 };
-
-function fallbackUsername(userEmail: string | undefined, userId: string) {
-  const localPart = userEmail?.split("@")[0] ?? "";
-  const normalized = localPart.toLowerCase().replace(/[^a-z0-9_]/g, "_");
-  const username = normalized.slice(0, 24);
-  return username.length >= 3
-    ? username
-    : `user_${userId.replace(/-/g, "").slice(0, 8)}`;
-}
 
 function saveErrorMessage(error: unknown) {
   if (error instanceof Error && error.message) {
@@ -60,7 +51,7 @@ export default function DashboardPage() {
         const { data } = await supabase
           .from("profiles")
           .select(
-            "username, display_name, bio, avatar_url, github_url, twitter_url, website_url",
+            "full_name, bio, avatar_url, github_url, twitter_url, website_url",
           )
           .eq("id", user.id)
           .maybeSingle();
@@ -71,7 +62,7 @@ export default function DashboardPage() {
           "";
         if (active) {
           setProfile({
-            display_name: data?.display_name || metadataName,
+            full_name: data?.full_name || metadataName,
             bio: data?.bio ?? "",
             avatar_url: data?.avatar_url ?? "",
             github_url: data?.github_url ?? "",
@@ -105,25 +96,17 @@ export default function DashboardPage() {
       if (authError) throw authError;
       if (!user) throw new Error("Devi accedere per salvare il profilo.");
 
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .maybeSingle();
       const metadata = user.user_metadata ?? {};
       const metadataName =
         (typeof metadata.full_name === "string" && metadata.full_name) ||
         (typeof metadata.display_name === "string" && metadata.display_name) ||
         "";
-      const displayName = profile.display_name.trim() || metadataName;
+      const fullName = profile.full_name.trim() || metadataName;
       const { error: updateError } = await supabase
         .from("profiles")
         .upsert({
           id: user.id,
-          username:
-            existingProfile?.username ||
-            fallbackUsername(user.email, user.id),
-          display_name: displayName || "Tester",
+          full_name: fullName || "Tester",
           bio: profile.bio.trim() || null,
           avatar_url: profile.avatar_url.trim() || null,
           github_url: profile.github_url.trim() || null,
@@ -172,10 +155,10 @@ export default function DashboardPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block text-sm">
-              Nome visualizzato
+              Nome completo
               <input
-                value={profile.display_name}
-                onChange={(event) => updateField("display_name", event.target.value)}
+                value={profile.full_name}
+                onChange={(event) => updateField("full_name", event.target.value)}
                 maxLength={80}
                 className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
               />

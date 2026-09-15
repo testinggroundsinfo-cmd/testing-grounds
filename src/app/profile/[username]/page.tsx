@@ -12,7 +12,7 @@ type ProfilePageProps = {
 type Profile = {
   id: string;
   username: string;
-  display_name: string;
+  full_name: string;
   avatar_url: string | null;
   bio: string | null;
   website_url: string | null;
@@ -45,7 +45,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const supabase = await createClient();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, bio, website_url")
+    .select("id, username, full_name, avatar_url, bio, website_url")
     .eq("username", username.toLowerCase())
     .maybeSingle();
 
@@ -85,7 +85,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 className="h-24 w-24 shrink-0 rounded-full border border-white/10 bg-cover bg-center"
                 style={{ backgroundImage: `url(${profile.avatar_url})` }}
                 role="img"
-                aria-label={`Avatar di ${profile.display_name}`}
+                aria-label={`Avatar di ${profile.full_name}`}
               />
             ) : (
               <div
@@ -101,7 +101,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 Creatore
               </p>
               <h1 className="text-3xl font-semibold tracking-tight">
-                {profile.display_name}
+                {profile.full_name}
               </h1>
               <p className="text-sm text-zinc-500">@{profile.username}</p>
               {profile.bio ? (
