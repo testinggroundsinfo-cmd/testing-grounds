@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { requireBrowserUser } from "@/lib/auth/ensure-profile";
+import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import { moddingGames } from "@/data/modding-games";
 import type {
@@ -66,8 +66,16 @@ function optionalValue(form: FormData, name: string) {
 }
 
 function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  return "Si è verificato un errore imprevisto durante il salvataggio.";
+  if (error && typeof error === "object" && "message" in error) {
+    const message = error.message;
+    if (typeof message === "string" && message) return message;
+  }
+  if (error instanceof Error && error.message) return error.message;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return "Errore imprevisto durante il salvataggio.";
+  }
 }
 
 export default function NewProjectPage() {
@@ -95,7 +103,7 @@ export default function NewProjectPage() {
 
     const form = new FormData(event.currentTarget);
     const submitCategory: ProjectCategory =
-      publicationType === "mod" ? "gaming" : publicationType;
+      publicationType === "software" ? "software" : "gaming";
     const title = String(form.get("title") ?? "").trim();
     const shortPitch = String(form.get("short_pitch") ?? "").trim();
     const description = String(form.get("description") ?? "").trim();
@@ -137,23 +145,39 @@ export default function NewProjectPage() {
       return;
     }
 
+    const platforms =
+      selectedPlatforms.length > 0
+        ? selectedPlatforms
+        : submitCategory === "software"
+          ? (["desktop"] as PlatformKind[])
+          : (["pc"] as PlatformKind[]);
+    const selectedStatus = String(form.get("status") || "alpha");
+    const developmentStatus = developmentStatuses.some(
+      ([status]) => status === selectedStatus,
+    )
+      ? (selectedStatus as DevelopmentStatus)
+      : "alpha";
+
     try {
       const supabase = createClient();
-      const user = await requireBrowserUser(supabase);
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) throw new Error("Devi accedere per pubblicare un progetto.");
+      await ensureProfile(supabase, user);
 
       const { error } = await supabase.from("projects").insert({
-        // user_id richiesto dall'interfaccia corrisponde a owner_id nello schema.
         owner_id: user.id,
-        category: effectiveCategory,
+        category: effectiveCategory || "gaming",
         project_type: publicationType === "mod" ? "mod" : "project",
         title,
         slug,
         description: `${shortPitch}\n\n${description}`.trim(),
         // status -> development_status
-        development_status: String(
-          form.get("status") || "alpha",
-        ) as DevelopmentStatus,
-        platforms: selectedPlatforms,
+        development_status: developmentStatus,
+        platforms,
         tags: String(form.get("tags") ?? "")
           .split(",")
           .map((tag) => tag.trim())
@@ -185,9 +209,8 @@ export default function NewProjectPage() {
       });
 
       if (error) {
-        throw new Error(
-          `Impossibile salvare il progetto: ${error.message}`,
-        );
+        setMessage(getErrorMessage(error));
+        return;
       }
 
       router.push("/dashboard");
