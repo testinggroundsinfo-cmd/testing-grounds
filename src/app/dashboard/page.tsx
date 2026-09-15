@@ -223,6 +223,12 @@ export default function DashboardPage() {
       >
         Pubblica una scheda
       </Link>
+      <Link
+        href="/dashboard/projects"
+        className="ml-3 inline-flex rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold"
+      >
+        I miei progetti
+      </Link>
     </div>
   );
 }

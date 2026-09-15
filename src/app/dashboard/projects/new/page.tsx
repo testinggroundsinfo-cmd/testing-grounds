@@ -162,6 +162,10 @@ export default function NewProjectPage() {
     const description = String(form.get("description") ?? "").trim();
     const rawSlug = String(form.get("slug") ?? "").trim();
     const slug = slugify(rawSlug || title);
+    const selectedCover = form.get("cover_file");
+    const coverFile = selectedCover instanceof File && selectedCover.size > 0
+      ? selectedCover
+      : null;
     const selectedPlatforms = form
       .getAll("platforms")
       .map(String)
@@ -196,6 +200,15 @@ export default function NewProjectPage() {
     const isModding = category === "modding";
     if (isModding && !selectedGame) {
       setMessage("Seleziona il gioco di destinazione della mod.");
+      setSubmitting(false);
+      return;
+    }
+    if (
+      coverFile &&
+      (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type) ||
+        coverFile.size > 5 * 1024 * 1024)
+    ) {
+      setMessage("La cover deve essere JPG, PNG o WebP e non superare 5 MB.");
       setSubmitting(false);
       return;
     }
@@ -267,6 +280,24 @@ export default function NewProjectPage() {
       if (error) {
         setMessage(getErrorMessage(error));
         return;
+      }
+
+      if (coverFile) {
+        const extension = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${user.id}/${slug}/cover.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from("project-media")
+          .upload(path, coverFile, { upsert: true, contentType: coverFile.type });
+        if (uploadError) throw uploadError;
+        const { data: publicData } = supabase.storage
+          .from("project-media")
+          .getPublicUrl(path);
+        const { error: coverError } = await supabase
+          .from("projects")
+          .update({ cover_url: publicData.publicUrl })
+          .eq("owner_id", user.id)
+          .eq("slug", slug);
+        if (coverError) throw coverError;
       }
 
       router.push("/dashboard");
@@ -520,6 +551,19 @@ export default function NewProjectPage() {
             type="url"
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           />
+        </label>
+
+        <label className="block text-sm">
+          Immagine di copertina
+          <input
+            name="cover_file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="mt-1 block w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
+          />
+          <span className="mt-1 block text-xs text-zinc-400">
+            JPG, PNG o WebP. Massimo 5 MB.
+          </span>
         </label>
 
         <label className="flex items-center gap-2 text-sm">

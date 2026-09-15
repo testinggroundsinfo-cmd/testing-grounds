@@ -84,6 +84,15 @@ export type Project = {
   mod_file_url?: string | null;
 };
 
+export type ProjectRelease = {
+  id: string;
+  project_id: string;
+  version: string;
+  changelog: string | null;
+  download_url: string | null;
+  created_at: string;
+};
+
 export type BugReport = {
   id: string;
   project_id: string;
