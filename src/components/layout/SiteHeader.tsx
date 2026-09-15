@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Gamepad2, LogOut, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CategorySwitch } from "@/components/layout/CategorySwitch";
+import { GlobalProjectSearch } from "@/components/layout/GlobalProjectSearch";
 import { createClient } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
 
@@ -38,12 +39,13 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <Gamepad2 className="h-5 w-5 text-accent" />
-          Testing-Grounds
+          <span className="hidden sm:inline">Testing-Grounds</span>
         </Link>
         <CategorySwitch />
+        <GlobalProjectSearch />
         <nav className="flex items-center gap-2 text-sm text-zinc-300">
           {user ? (
             <>

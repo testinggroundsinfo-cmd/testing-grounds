@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gamepad2, AppWindow } from "lucide-react";
+import { Gamepad2, AppWindow, Puzzle } from "lucide-react";
 
 const items = [
   { href: "/gaming", label: "Gaming", icon: Gamepad2 },
   { href: "/software", label: "App & Software", icon: AppWindow },
+  { href: "/modding", label: "Modding", icon: Puzzle },
 ] as const;
 
 export function CategorySwitch() {

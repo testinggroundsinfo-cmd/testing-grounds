@@ -1,4 +1,5 @@
 export type ProjectCategory = "gaming" | "software";
+export type ProjectType = "project" | "mod";
 
 export type DevelopmentStatus =
   | "pre_alpha"
@@ -75,6 +76,13 @@ export type Project = {
   distribution_url: string | null;
   is_published: boolean;
   created_at: string;
+  project_type?: ProjectType;
+  game_slug?: string | null;
+  game_title?: string | null;
+  mod_version?: string | null;
+  compatibility?: string | null;
+  game_cover_url?: string | null;
+  mod_file_url?: string | null;
 };
 
 export type BugReport = {
