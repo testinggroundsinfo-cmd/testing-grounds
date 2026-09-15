@@ -1,8 +1,19 @@
 import { type NextRequest } from "next/server";
+import createMiddleware from "next-intl/middleware";
 import { updateSession } from "@/lib/supabase/middleware";
+import { routing } from "@/i18n/routing";
+
+const handleI18nRouting = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
-  return updateSession(request);
+  const i18nResponse = handleI18nRouting(request);
+  const sessionResponse = await updateSession(request);
+
+  i18nResponse.cookies.getAll().forEach(({ name, value, ...options }) => {
+    sessionResponse.cookies.set(name, value, options);
+  });
+
+  return sessionResponse;
 }
 
 export const config = {

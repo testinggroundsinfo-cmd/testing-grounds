@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "login": "Log in",
+    "register": "Sign up",
+    "dashboard": "Dashboard / My profile",
+    "logout": "Log out",
+    "language": "Language"
+  },
+  "footer": {
+    "transparency": "Testing-Grounds is free. Banners support the site creators with hosting, maintenance and continued platform development."
+  },
+  "hubs": {
+    "modding": "Modding",
+    "software": "Software",
+    "gaming": "Gaming",
+    "popular": "Most Popular",
+    "recent": "New Releases / Most Recent",
+    "search": "Search...",
+    "all": "All"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "profile": "My profile",
+    "save": "Save changes",
+    "publish": "Publish a project"
+  }
+}

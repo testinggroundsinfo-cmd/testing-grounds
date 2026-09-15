@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "dashboard": "Panel / Mi perfil",
+    "logout": "Cerrar sesión",
+    "language": "Idioma"
+  },
+  "footer": {
+    "transparency": "Testing-Grounds es gratuita. Los banners apoyan a los creadores del sitio para garantizar el alojamiento, el mantenimiento y el desarrollo continuo de la plataforma."
+  },
+  "hubs": {
+    "modding": "Modding",
+    "software": "Software",
+    "gaming": "Gaming",
+    "popular": "Más populares",
+    "recent": "Novedades / Más recientes",
+    "search": "Buscar...",
+    "all": "Todos"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "profile": "Mi perfil",
+    "save": "Guardar cambios",
+    "publish": "Publicar un proyecto"
+  }
+}

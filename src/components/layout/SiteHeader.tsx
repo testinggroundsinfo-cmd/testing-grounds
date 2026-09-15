@@ -5,13 +5,16 @@ import { Gamepad2, LogOut, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CategorySwitch } from "@/components/layout/CategorySwitch";
 import { GlobalProjectSearch } from "@/components/layout/GlobalProjectSearch";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { createClient } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
+import { useTranslations } from "next-intl";
 
 const supabase = createClient();
 
 export function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
+  const t = useTranslations("nav");
 
   useEffect(() => {
     let mounted = true;
@@ -47,6 +50,7 @@ export function SiteHeader() {
         <CategorySwitch />
         <GlobalProjectSearch />
         <nav className="flex items-center gap-2 text-sm text-zinc-300">
+          <LanguageSwitcher />
           {user ? (
             <>
               <Link
@@ -54,7 +58,7 @@ export function SiteHeader() {
                 className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15"
               >
                 <UserRound className="h-4 w-4" />
-                Dashboard / Il mio profilo
+                {t("dashboard")}
               </Link>
               <button
                 type="button"
@@ -62,19 +66,19 @@ export function SiteHeader() {
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10 hover:text-white"
               >
                 <LogOut className="h-4 w-4" />
-                Esci
+                {t("logout")}
               </button>
             </>
           ) : (
             <>
               <Link href="/login" className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15">
-                Accedi
+                {t("login")}
               </Link>
               <Link
                 href="/register"
                 className="rounded-lg bg-accent px-3 py-1.5 font-semibold text-ink-950 hover:bg-accent-dim"
               >
-                Registrati
+                {t("register")}
               </Link>
             </>
           )}
