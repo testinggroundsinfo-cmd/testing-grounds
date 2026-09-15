@@ -9,6 +9,7 @@ import type {
   DevelopmentStatus,
   DistributionKind,
   PlatformKind,
+  ProjectType,
   ProjectCategory,
 } from "@/types/database";
 
@@ -26,22 +27,26 @@ type PublicationType =
   | "tool";
 
 type CleanProjectPayload = {
+  owner_id: string;
   title: string;
-  slug: string | null;
+  slug: string;
   description: string;
-  category: FormCategory;
-  project_type: PublicationType;
+  category: ProjectCategory;
+  project_type: ProjectType;
   development_status: DevelopmentStatus;
   platforms: PlatformKind[];
   tags: string[];
   cover_url: string | null;
   youtube_url: string | null;
   iframe_url: string | null;
-  distribution_type: DistributionKind | null;
-  download_url: string | null;
-  game_name: string | null;
+  distribution_kind: DistributionKind | null;
+  distribution_url: string | null;
   mod_version: string | null;
   compatibility: string | null;
+  game_slug: string | null;
+  game_title: string | null;
+  game_cover_url: string | null;
+  mod_file_url: string | null;
   is_published: boolean;
 };
 
@@ -156,7 +161,7 @@ export default function NewProjectPage() {
     const shortPitch = String(form.get("short_pitch") ?? "").trim();
     const description = String(form.get("description") ?? "").trim();
     const rawSlug = String(form.get("slug") ?? "").trim();
-    const slug = rawSlug ? slugify(rawSlug) : null;
+    const slug = slugify(rawSlug || title);
     const selectedPlatforms = form
       .getAll("platforms")
       .map(String)
@@ -171,7 +176,7 @@ export default function NewProjectPage() {
       (game) => game.slug === selectedGameSlug,
     );
 
-    if (slug !== null && slug.length < 3) {
+    if (slug.length < 3) {
       setMessage(
         "Lo slug deve contenere almeno 3 caratteri alfanumerici o trattini.",
       );
@@ -218,11 +223,12 @@ export default function NewProjectPage() {
       if (!user) throw new Error("Devi accedere per pubblicare un progetto.");
       await ensureProfile(supabase, user);
 
-      const formData = {
+      const cleanData: CleanProjectPayload = {
+        owner_id: user.id,
         title,
         slug,
-        category,
-        project_type: publicationType,
+        category: submitCategory,
+        project_type: isModding ? "mod" : "project",
         description: `${shortPitch}\n\n${description}`.trim(),
         development_status: developmentStatus,
         platforms,
@@ -241,42 +247,22 @@ export default function NewProjectPage() {
             : []),
         ],
         cover_url: optionalValue(form, "cover_url"),
-        cover_image_url: optionalValue(form, "cover_image_url"),
         youtube_url: optionalValue(form, "youtube_url"),
         iframe_url: optionalValue(form, "iframe_url"),
-        distribution_type: selectedDistribution as DistributionKind | null,
         distribution_kind: selectedDistribution as DistributionKind | null,
-        download_url: optionalValue(form, "download_url"),
         distribution_url: optionalValue(form, "distribution_link"),
         is_published: form.get("is_published") === "on",
-        game_name: optionalValue(form, "game_name") || selectedGame?.name || null,
-        target_game: selectedGame?.name || null,
         mod_version: isModding ? optionalValue(form, "mod_version") : null,
         compatibility: isModding ? optionalValue(form, "compatibility") : null,
+        game_slug: isModding ? selectedGame?.slug || null : null,
+        game_title: isModding ? selectedGame?.name || null : null,
+        game_cover_url: isModding
+          ? optionalValue(form, "game_cover_url") || selectedGame?.cover_url || null
+          : null,
+        mod_file_url: isModding ? optionalValue(form, "mod_file_url") : null,
       };
 
-      const cleanPayload: CleanProjectPayload = {
-        title: formData.title,
-        slug: formData.slug || null,
-        description: formData.description,
-        category: formData.category,
-        project_type: formData.project_type,
-        development_status: formData.development_status || "mvp",
-        platforms: formData.platforms || [],
-        tags: formData.tags || [],
-        cover_url: formData.cover_url || formData.cover_image_url || null,
-        youtube_url: formData.youtube_url || null,
-        iframe_url: formData.iframe_url || null,
-        distribution_type:
-          formData.distribution_type || formData.distribution_kind || null,
-        download_url: formData.download_url || formData.distribution_url || null,
-        game_name: formData.game_name || formData.target_game || null,
-        mod_version: formData.mod_version || null,
-        compatibility: formData.compatibility || null,
-        is_published: formData.is_published || false,
-      };
-
-      const { error } = await supabase.from("projects").insert(cleanPayload);
+      const { error } = await supabase.from("projects").insert(cleanData);
 
       if (error) {
         setMessage(getErrorMessage(error));
