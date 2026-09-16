@@ -7,14 +7,16 @@ import { createClient } from "@/lib/supabaseClient";
 export function CollaboratorForm({ projectId }: { projectId: string }) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [applicationMessage, setApplicationMessage] = useState("");
+  const [portfolioUrl, setPortfolioUrl] = useState("");
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
     const form = new FormData(event.currentTarget);
-    const applicationMessage = String(form.get("message") ?? "").trim();
-    const portfolioUrl = String(form.get("portfolio_url") ?? "").trim();
-    if (!applicationMessage && !portfolioUrl) {
+    const cleanApplicationMessage = applicationMessage.trim();
+    const cleanPortfolioUrl = portfolioUrl.trim();
+    if (!cleanApplicationMessage && !cleanPortfolioUrl) {
       setMessage("Compila almeno un campo prima di inviare.");
       setSubmitting(false);
       return;
@@ -27,15 +29,33 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
         project_id: projectId,
         applicant_id: user?.id ?? null,
         role: String(form.get("role") || "other") as never,
-        message: applicationMessage,
-        portfolio_url: portfolioUrl || null,
+        message: cleanApplicationMessage,
+        portfolio_url: cleanPortfolioUrl || null,
       };
       const { error } = await supabase.from("collaborator_applications").insert(cleanPayload);
       if (error) {
         console.error("Errore Supabase:", error);
         throw error;
       }
-      event.currentTarget.reset();
+      const notificationResponse = await fetch(
+        `/api/projects/${projectId}/applications/notify`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            project_id: projectId,
+            role: cleanPayload.role,
+            message: cleanPayload.message,
+            portfolio_url: cleanPayload.portfolio_url,
+            applicant_id: cleanPayload.applicant_id,
+          }),
+        },
+      );
+      if (!notificationResponse.ok) {
+        console.warn("Candidatura salvata, ma la notifica non è stata consegnata.");
+      }
+      setApplicationMessage("");
+      setPortfolioUrl("");
       setMessage("Candidatura inviata.");
     } catch (error) {
       console.error("Submit Error:", error);
@@ -64,11 +84,11 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
       </label>
       <label className="block text-sm">
         Messaggio
-        <textarea name="message" maxLength={2000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <textarea name="message" value={applicationMessage} onChange={(event) => setApplicationMessage(event.target.value)} maxLength={2000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <label className="block text-sm">
         Portfolio / link
-        <input name="portfolio_url" type="url" className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <input name="portfolio_url" value={portfolioUrl} onChange={(event) => setPortfolioUrl(event.target.value)} type="url" className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
         {submitting ? "Invio..." : "Invia candidatura"}

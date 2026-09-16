@@ -3,6 +3,7 @@ import { ArrowLeft, Download, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProjectTabs } from "@/components/project/ProjectTabs";
+import { PublicFeedbackLists } from "@/components/feedback/PublicFeedbackLists";
 import { createClient } from "@/lib/supabase/server";
 import type { DistributionKind } from "@/types/database";
 import type { AlternativeLink } from "@/types/database";
@@ -240,6 +241,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           projectId={project.id}
           category={project.category}
         />
+        <PublicFeedbackLists projectId={project.id} />
       </article>
     </AppShell>
   );

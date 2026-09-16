@@ -8,6 +8,8 @@ import type { ProjectCategory } from "@/types/database";
 export function ReviewForm({ category, projectId }: { category: ProjectCategory; projectId: string }) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [comment, setComment] = useState("");
+  const [scoreValues, setScoreValues] = useState<Record<string, string>>({});
   const fields = category === "gaming"
     ? [["Gameplay", "gameplay"], ["Grafica", "graphics"], ["Bilanciamento", "balance"], ["Divertimento", "fun"]]
     : [["Usabilità / UX", "usability"], ["Utilità", "usefulness"], ["Interfaccia / UI", "ui_quality"]];
@@ -16,16 +18,15 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
-    const form = new FormData(event.currentTarget);
-    const comment = String(form.get("comment") ?? "").trim();
+    const cleanComment = comment.trim();
     const scores = Object.fromEntries(
       fields
         .map(([, key]) => {
-          const value = String(form.get(key) ?? "").trim();
+          const value = (scoreValues[key] ?? "").trim();
           return [key, value ? Number(value) : null];
         }),
     );
-    if (!comment && !Object.values(scores).some((score) => score !== null)) {
+    if (!cleanComment && !Object.values(scores).some((score) => score !== null)) {
       setMessage("Compila almeno un campo prima di inviare.");
       setSubmitting(false);
       return;
@@ -44,14 +45,15 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         usability: scores.usability ?? null,
         usefulness: scores.usefulness ?? null,
         ui_quality: scores.ui_quality ?? null,
-        comment: comment || null,
+        comment: cleanComment || null,
       };
       const { error } = await supabase.from("reviews").insert(cleanPayload);
       if (error) {
         console.error("Errore Supabase:", error);
         throw error;
       }
-      event.currentTarget.reset();
+      setComment("");
+      setScoreValues({});
       setMessage("Recensione pubblicata.");
     } catch (error) {
       console.error("Submit Error:", error);
@@ -73,6 +75,8 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
               type="number"
               min={1}
               max={5}
+              value={scoreValues[name] ?? ""}
+              onChange={(event) => setScoreValues((current) => ({ ...current, [name]: event.target.value }))}
               className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
             />
           </label>
@@ -80,7 +84,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       </div>
       <label className="block text-sm">
         Suggerimenti e critiche costruttive
-        <textarea name="comment" maxLength={4000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <textarea name="comment" value={comment} onChange={(event) => setComment(event.target.value)} maxLength={4000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
         {submitting ? "Pubblicazione..." : "Pubblica recensione"}

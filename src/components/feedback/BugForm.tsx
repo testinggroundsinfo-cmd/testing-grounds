@@ -15,15 +15,17 @@ export function BugForm({
   const isGame = category === "gaming";
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [bugTitle, setBugTitle] = useState("");
+  const [reproductionSteps, setReproductionSteps] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
     const form = new FormData(event.currentTarget);
-    const bugTitle = String(form.get("title") ?? "").trim();
-    const reproductionSteps = String(form.get("steps") ?? "").trim();
-    if (!bugTitle && !reproductionSteps) {
+    const cleanBugTitle = bugTitle.trim();
+    const cleanReproductionSteps = reproductionSteps.trim();
+    if (!cleanBugTitle && !cleanReproductionSteps) {
       setMessage("Compila almeno un campo prima di inviare.");
       setSubmitting(false);
       return;
@@ -35,9 +37,9 @@ export function BugForm({
       const cleanPayload = {
         project_id: projectId,
         author_id: user?.id ?? null,
-        title: bugTitle || null,
+        title: cleanBugTitle || null,
         kind: String(form.get("kind") || "other").toLowerCase() as never,
-        steps_to_reproduce: reproductionSteps || null,
+        steps_to_reproduce: cleanReproductionSteps || null,
         avg_fps: form.get("avg_fps") ? Number(form.get("avg_fps")) : null,
         os_name: String(form.get("os_name") ?? "").trim() || null,
         gpu_name: String(form.get("gpu_name") ?? "").trim() || null,
@@ -50,7 +52,8 @@ export function BugForm({
         console.error("Errore Supabase:", error);
         throw error;
       }
-      event.currentTarget.reset();
+      setBugTitle("");
+      setReproductionSteps("");
       setMessage("Report inviato.");
     } catch (error) {
       console.error("Submit Error:", error);
@@ -65,7 +68,7 @@ export function BugForm({
       <h2 className="text-lg font-medium">Segnala un bug</h2>
       <label className="block text-sm">
         Titolo
-        <input name="title" maxLength={120} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <input name="title" value={bugTitle} onChange={(event) => setBugTitle(event.target.value)} maxLength={120} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <label className="block text-sm">
         Tipo
@@ -121,7 +124,7 @@ export function BugForm({
       )}
       <label className="block text-sm">
         Passaggi per riprodurlo
-        <textarea name="steps" rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <textarea name="steps" value={reproductionSteps} onChange={(event) => setReproductionSteps(event.target.value)} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
         {submitting ? "Invio..." : "Invia report"}
