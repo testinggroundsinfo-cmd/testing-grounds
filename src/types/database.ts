@@ -74,6 +74,7 @@ export type Project = {
   iframe_url: string | null;
   distribution_kind: DistributionKind | null;
   distribution_url: string | null;
+  alternative_links?: AlternativeLink[];
   is_published: boolean;
   created_at: string;
   project_type?: ProjectType;
@@ -83,6 +84,11 @@ export type Project = {
   compatibility?: string | null;
   game_cover_url?: string | null;
   mod_file_url?: string | null;
+};
+
+export type AlternativeLink = {
+  label: string;
+  url: string;
 };
 
 export type ProjectRelease = {

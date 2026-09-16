@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ProjectTabs } from "@/components/project/ProjectTabs";
 import { createClient } from "@/lib/supabase/server";
 import type { DistributionKind } from "@/types/database";
+import type { AlternativeLink } from "@/types/database";
 
 type ProjectPageProps = {
   params: Promise<{ id: string }>;
@@ -21,6 +22,7 @@ type Project = {
   iframe_url: string | null;
   distribution_kind: DistributionKind | null;
   distribution_url: string | null;
+  alternative_links: AlternativeLink[] | null;
 };
 
 function getYoutubeEmbedUrl(value: string) {
@@ -89,7 +91,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url",
+      "id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url, alternative_links",
     )
     .eq("id", id)
     .maybeSingle();
@@ -106,6 +108,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const youtubeEmbedUrl = project.youtube_url
     ? getYoutubeEmbedUrl(project.youtube_url)
     : null;
+  const alternativeLinks = Array.isArray(project.alternative_links)
+    ? project.alternative_links.filter(
+        (link) => typeof link?.label === "string" && typeof link?.url === "string",
+      )
+    : [];
 
   return (
     <AppShell>
@@ -180,26 +187,51 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </section>
         ) : null}
 
-        {project.distribution_kind && project.distribution_url ? (
+        {project.distribution_url || alternativeLinks.length > 0 ? (
           <section className="rounded-2xl border border-accent/30 bg-accent/5 p-6">
-            <h2 className="text-xl font-semibold">Come provarlo</h2>
+            <h2 className="text-xl font-semibold">
+              {project.category === "gaming" ? "Scarica Ora / Prova il Gioco" : "Accedi al progetto"}
+            </h2>
             <p className="mt-2 text-sm text-zinc-400">
-              Accedi alla versione di test del progetto.
+              Usa il link principale oppure una fonte alternativa.
             </p>
-            <a
-              href={project.distribution_url}
-              target="_blank"
-              rel="noreferrer"
-              download={isDownload(project.distribution_kind) ? true : undefined}
-              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-dim"
-            >
-              {isDownload(project.distribution_kind) ? (
-                <Download className="h-4 w-4" />
-              ) : (
-                <ExternalLink className="h-4 w-4" />
-              )}
-              {distributionLabel(project.distribution_kind)}
-            </a>
+            {project.distribution_url ? (
+              <a
+                href={project.distribution_url}
+                target="_blank"
+                rel="noreferrer"
+                download={project.distribution_kind ? isDownload(project.distribution_kind) : undefined}
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-dim"
+              >
+                {project.distribution_kind && isDownload(project.distribution_kind) ? (
+                  <Download className="h-4 w-4" />
+                ) : (
+                  <ExternalLink className="h-4 w-4" />
+                )}
+                {project.distribution_kind ? distributionLabel(project.distribution_kind) : "Scarica Ora"}
+              </a>
+            ) : null}
+            {alternativeLinks.length > 0 ? (
+              <details className="mt-5 rounded-lg border border-white/10 bg-ink-900/40 p-4">
+                <summary className="cursor-pointer text-sm font-medium">
+                  Link Alternativi &amp; Mirror
+                </summary>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {alternativeLinks.map((link) => (
+                    <a
+                      key={`${link.label}-${link.url}`}
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm hover:bg-white/10"
+                    >
+                      <ExternalLink className="h-4 w-4 text-accent" />
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </section>
         ) : null}
 

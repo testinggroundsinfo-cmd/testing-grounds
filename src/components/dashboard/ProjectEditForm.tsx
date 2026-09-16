@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
-import type { Project } from "@/types/database";
+import type { AlternativeLink, Project } from "@/types/database";
 
 type Props = { project: Project };
 
@@ -17,6 +17,9 @@ export default function ProjectEditForm({ project }: Props) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [alternativeLinks, setAlternativeLinks] = useState<AlternativeLink[]>(
+    project.alternative_links ?? [],
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +44,9 @@ export default function ProjectEditForm({ project }: Props) {
         youtube_url: valueOrNull(String(form.get("youtube_url") ?? "")),
         iframe_url: valueOrNull(String(form.get("iframe_url") ?? "")),
         distribution_url: valueOrNull(String(form.get("distribution_url") ?? "")),
+        alternative_links: alternativeLinks
+          .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+          .filter((link) => link.label && link.url),
         cover_url: project.cover_url,
         is_published: form.get("is_published") === "on",
       };
@@ -88,6 +94,31 @@ export default function ProjectEditForm({ project }: Props) {
         <label className="block text-sm">Iframe URL<input name="iframe_url" type="url" defaultValue={project.iframe_url ?? ""} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
       </div>
       <label className="block text-sm">Link distribuzione<input name="distribution_url" type="url" defaultValue={project.distribution_url ?? ""} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
+      <fieldset className="space-y-3 rounded-xl border border-white/10 bg-ink-900/50 p-4">
+        <legend className="text-sm font-medium">Link Alternativi / Mirror</legend>
+        <p className="text-xs text-zinc-400">Aggiungi, modifica o rimuovi fonti alternative.</p>
+        {alternativeLinks.map((link, index) => (
+          <div key={index} className="grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
+            <input
+              value={link.label}
+              onChange={(event) => setAlternativeLinks((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))}
+              placeholder="GitHub Releases"
+              aria-label={`Etichetta mirror ${index + 1}`}
+              className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
+            />
+            <input
+              value={link.url}
+              onChange={(event) => setAlternativeLinks((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, url: event.target.value } : item))}
+              type="url"
+              placeholder="https://..."
+              aria-label={`URL mirror ${index + 1}`}
+              className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
+            />
+            <button type="button" onClick={() => setAlternativeLinks((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg border border-red-400/30 px-3 py-2 text-sm text-red-300">Rimuovi</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => setAlternativeLinks((current) => [...current, { label: "", url: "" }])} className="rounded-lg border border-white/10 px-3 py-2 text-sm">+ Aggiungi mirror</button>
+      </fieldset>
       <label className="block text-sm">Nuova immagine di copertina<input name="cover_file" type="file" accept="image/jpeg,image/png,image/webp" className="mt-1 block w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm" /></label>
       {project.cover_url ? <img src={project.cover_url} alt="" className="h-32 w-full rounded-lg object-cover" /> : null}
       <label className="flex items-center gap-2 text-sm"><input name="is_published" type="checkbox" defaultChecked={project.is_published} /> Pubblicato</label>

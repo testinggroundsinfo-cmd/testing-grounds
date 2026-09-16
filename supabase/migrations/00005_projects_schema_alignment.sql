@@ -15,6 +15,7 @@ alter table public.projects
   add column if not exists iframe_url text,
   add column if not exists distribution_kind text,
   add column if not exists distribution_url text,
+  add column if not exists alternative_links jsonb not null default '[]'::jsonb,
   add column if not exists game_slug text,
   add column if not exists game_title text,
   add column if not exists game_cover_url text,

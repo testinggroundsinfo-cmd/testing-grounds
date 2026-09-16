@@ -11,6 +11,7 @@ import type {
   PlatformKind,
   ProjectType,
   ProjectCategory,
+  AlternativeLink,
 } from "@/types/database";
 
 type FormCategory = "gaming" | "software" | "modding";
@@ -42,6 +43,7 @@ type CleanProjectPayload = {
   iframe_url: string | null;
   distribution_kind: DistributionKind | null;
   distribution_url: string | null;
+  alternative_links: AlternativeLink[];
   mod_version: string | null;
   compatibility: string | null;
   game_slug: string | null;
@@ -143,6 +145,7 @@ export default function NewProjectPage() {
     useState<PublicationType>("full_game");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [alternativeLinks, setAlternativeLinks] = useState<AlternativeLink[]>([]);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("type") === "mod") {
       setPublicationType("mod");
@@ -161,6 +164,9 @@ export default function NewProjectPage() {
     const title = String(form.get("title") ?? "").trim();
     const shortPitch = String(form.get("short_description") ?? "").trim();
     const description = String(form.get("description") ?? "").trim();
+    const cleanAlternativeLinks = alternativeLinks
+      .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+      .filter((link) => link.label && link.url);
     const rawSlug = String(form.get("slug") ?? "").trim();
     const slug = slugify(rawSlug || title);
     const selectedCover = form.get("cover_file");
@@ -266,6 +272,7 @@ export default function NewProjectPage() {
         iframe_url: optionalValue(form, "iframe_url"),
         distribution_kind: selectedDistribution as DistributionKind | null,
         distribution_url: optionalValue(form, "distribution_link"),
+        alternative_links: cleanAlternativeLinks,
         is_published: form.get("is_published") === "on",
         mod_version: isModding ? optionalValue(form, "mod_version") : null,
         compatibility: isModding ? optionalValue(form, "compatibility") : null,
@@ -545,6 +552,60 @@ export default function NewProjectPage() {
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           />
         </label> : null}
+
+        <fieldset className="space-y-3 rounded-xl border border-white/10 bg-ink-900/50 p-4">
+          <legend className="text-sm font-medium">Link Alternativi / Mirror</legend>
+          <p className="text-xs text-zinc-400">
+            Aggiungi fonti alternative per il download o l&apos;accesso.
+          </p>
+          {alternativeLinks.map((link, index) => (
+            <div key={index} className="grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
+              <input
+                value={link.label}
+                onChange={(event) =>
+                  setAlternativeLinks((current) =>
+                    current.map((item, itemIndex) =>
+                      itemIndex === index ? { ...item, label: event.target.value } : item,
+                    ),
+                  )
+                }
+                placeholder="Mirror MediaFire"
+                aria-label={`Etichetta mirror ${index + 1}`}
+                className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
+              />
+              <input
+                value={link.url}
+                onChange={(event) =>
+                  setAlternativeLinks((current) =>
+                    current.map((item, itemIndex) =>
+                      itemIndex === index ? { ...item, url: event.target.value } : item,
+                    ),
+                  )
+                }
+                type="url"
+                placeholder="https://..."
+                aria-label={`URL mirror ${index + 1}`}
+                className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setAlternativeLinks((current) => current.filter((_, itemIndex) => itemIndex !== index))
+                }
+                className="rounded-lg border border-red-400/30 px-3 py-2 text-sm text-red-300"
+              >
+                Rimuovi
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setAlternativeLinks((current) => [...current, { label: "", url: "" }])}
+            className="rounded-lg border border-white/10 px-3 py-2 text-sm"
+          >
+            + Aggiungi mirror
+          </button>
+        </fieldset>
 
         <label className="block text-sm">
           Immagine di copertina

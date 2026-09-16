@@ -14,6 +14,7 @@ type ProjectUpdate = {
   youtube_url?: string | null;
   iframe_url?: string | null;
   distribution_url?: string | null;
+  alternative_links?: { label: string; url: string }[];
   cover_url?: string | null;
   is_published?: boolean;
 };
@@ -51,6 +52,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     "youtube_url",
     "iframe_url",
     "distribution_url",
+    "alternative_links",
     "cover_url",
     "is_published",
   ];
