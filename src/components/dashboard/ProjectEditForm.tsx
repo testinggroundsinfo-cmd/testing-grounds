@@ -41,15 +41,9 @@ export default function ProjectEditForm({ project }: Props) {
         youtube_url: valueOrNull(String(form.get("youtube_url") ?? "")),
         iframe_url: valueOrNull(String(form.get("iframe_url") ?? "")),
         distribution_url: valueOrNull(String(form.get("distribution_url") ?? "")),
+        cover_url: project.cover_url,
         is_published: form.get("is_published") === "on",
       };
-      const { error: updateError } = await supabase
-        .from("projects")
-        .update(cleanData)
-        .eq("id", project.id)
-        .eq("owner_id", user.id);
-      if (updateError) throw updateError;
-
       if (coverFile instanceof File && coverFile.size > 0) {
         if (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type) || coverFile.size > 5 * 1024 * 1024) {
           throw new Error("La cover deve essere JPG, PNG o WebP e non superare 5 MB.");
@@ -61,12 +55,17 @@ export default function ProjectEditForm({ project }: Props) {
           .upload(path, coverFile, { upsert: true, contentType: coverFile.type });
         if (uploadError) throw uploadError;
         const { data } = supabase.storage.from("project-media").getPublicUrl(path);
-        const { error: coverError } = await supabase
-          .from("projects")
-          .update({ cover_url: data.publicUrl })
-          .eq("id", project.id)
-          .eq("owner_id", user.id);
-        if (coverError) throw coverError;
+        cleanData.cover_url = data.publicUrl;
+      }
+
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cleanData),
+      });
+      const responseBody: { error?: string } = await response.json();
+      if (!response.ok) {
+        throw new Error(responseBody.error || "Impossibile aggiornare il progetto.");
       }
       setMessage("Progetto aggiornato correttamente.");
       router.refresh();
