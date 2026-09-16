@@ -12,6 +12,13 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
     setSubmitting(true);
     setMessage("");
     const form = new FormData(event.currentTarget);
+    const applicationMessage = String(form.get("message") ?? "").trim();
+    const portfolioUrl = String(form.get("portfolio_url") ?? "").trim();
+    if (!applicationMessage && !portfolioUrl) {
+      setMessage("Compila almeno un campo prima di inviare.");
+      setSubmitting(false);
+      return;
+    }
     try {
       const supabase = createClient();
       const user = await requireBrowserUser(supabase);
@@ -20,8 +27,8 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
         project_id: projectId,
         applicant_id: user.id,
         role: String(form.get("role") || "other") as never,
-        message: String(form.get("message") || ""),
-        portfolio_url: String(form.get("portfolio_url") || "") || null,
+        message: applicationMessage,
+        portfolio_url: portfolioUrl || null,
       });
       if (error) throw error;
       event.currentTarget.reset();
@@ -52,7 +59,7 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
       </label>
       <label className="block text-sm">
         Messaggio
-        <textarea name="message" required minLength={20} maxLength={2000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <textarea name="message" maxLength={2000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <label className="block text-sm">
         Portfolio / link

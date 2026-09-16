@@ -21,6 +21,13 @@ export function BugForm({
     setSubmitting(true);
     setMessage("");
     const form = new FormData(event.currentTarget);
+    const bugTitle = String(form.get("title") ?? "").trim();
+    const reproductionSteps = String(form.get("steps") ?? "").trim();
+    if (!bugTitle && !reproductionSteps) {
+      setMessage("Compila almeno un campo prima di inviare.");
+      setSubmitting(false);
+      return;
+    }
     try {
       const supabase = createClient();
       const user = await requireBrowserUser(supabase);
@@ -28,9 +35,9 @@ export function BugForm({
       const { error } = await supabase.from("bug_reports").insert({
         project_id: projectId,
         author_id: user.id,
-        title: String(form.get("title") || ""),
+        title: bugTitle,
         kind: String(form.get("kind") || "other").toLowerCase() as never,
-        steps_to_reproduce: String(form.get("steps") || ""),
+        steps_to_reproduce: reproductionSteps,
         avg_fps: form.get("avg_fps") ? Number(form.get("avg_fps")) : null,
         os_name: String(form.get("os_name") || "") || null,
         gpu_name: String(form.get("gpu_name") || "") || null,
@@ -53,7 +60,7 @@ export function BugForm({
       <h2 className="text-lg font-medium">Segnala un bug</h2>
       <label className="block text-sm">
         Titolo
-        <input name="title" required minLength={5} maxLength={120} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <input name="title" maxLength={120} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <label className="block text-sm">
         Tipo
@@ -109,7 +116,7 @@ export function BugForm({
       )}
       <label className="block text-sm">
         Passaggi per riprodurlo
-        <textarea name="steps" required rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <textarea name="steps" rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
         {submitting ? "Invio..." : "Invia report"}

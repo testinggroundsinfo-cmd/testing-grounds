@@ -17,11 +17,23 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
     setSubmitting(true);
     setMessage("");
     const form = new FormData(event.currentTarget);
+    const comment = String(form.get("comment") ?? "").trim();
+    const scores = Object.fromEntries(
+      fields
+        .map(([, key]) => {
+          const value = String(form.get(key) ?? "").trim();
+          return [key, value ? Number(value) : null];
+        }),
+    );
+    if (!comment && !Object.values(scores).some((score) => score !== null)) {
+      setMessage("Compila almeno un campo prima di inviare.");
+      setSubmitting(false);
+      return;
+    }
     try {
       const supabase = createClient();
       const user = await requireBrowserUser(supabase);
       await ensureProfile(supabase, user);
-      const scores = Object.fromEntries(fields.map(([, key]) => [key, Number(form.get(key))]));
       const { error } = await supabase.from("reviews").insert({
         project_id: projectId,
         author_id: user.id,
@@ -32,7 +44,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         usability: scores.usability ?? null,
         usefulness: scores.usefulness ?? null,
         ui_quality: scores.ui_quality ?? null,
-        comment: String(form.get("comment") || ""),
+        comment,
       });
       if (error) throw error;
       event.currentTarget.reset();
@@ -56,7 +68,6 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
               type="number"
               min={1}
               max={5}
-              required
               className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
             />
           </label>
@@ -64,7 +75,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       </div>
       <label className="block text-sm">
         Suggerimenti e critiche costruttive
-        <textarea name="comment" required minLength={20} maxLength={4000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
+        <textarea name="comment" maxLength={4000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
         {submitting ? "Pubblicazione..." : "Pubblica recensione"}
