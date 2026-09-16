@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ensureProfile, requireBrowserUser } from "@/lib/auth/ensure-profile";
+import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 
 export function CollaboratorForm({ projectId }: { projectId: string }) {
@@ -21,16 +21,20 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
     }
     try {
       const supabase = createClient();
-      const user = await requireBrowserUser(supabase);
-      await ensureProfile(supabase, user);
-      const { error } = await supabase.from("collaborator_applications").insert({
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await ensureProfile(supabase, user);
+      const cleanPayload = {
         project_id: projectId,
-        applicant_id: user.id,
+        applicant_id: user?.id ?? null,
         role: String(form.get("role") || "other") as never,
         message: applicationMessage,
         portfolio_url: portfolioUrl || null,
-      });
-      if (error) throw error;
+      };
+      const { error } = await supabase.from("collaborator_applications").insert(cleanPayload);
+      if (error) {
+        console.error("Errore Supabase:", error);
+        throw error;
+      }
       event.currentTarget.reset();
       setMessage("Candidatura inviata.");
     } catch (error) {

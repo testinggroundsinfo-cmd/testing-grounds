@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ensureProfile, requireBrowserUser } from "@/lib/auth/ensure-profile";
+import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import type { ProjectCategory } from "@/types/database";
 
@@ -30,22 +30,26 @@ export function BugForm({
     }
     try {
       const supabase = createClient();
-      const user = await requireBrowserUser(supabase);
-      await ensureProfile(supabase, user);
-      const { error } = await supabase.from("bug_reports").insert({
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await ensureProfile(supabase, user);
+      const cleanPayload = {
         project_id: projectId,
-        author_id: user.id,
-        title: bugTitle,
+        author_id: user?.id ?? null,
+        title: bugTitle || null,
         kind: String(form.get("kind") || "other").toLowerCase() as never,
-        steps_to_reproduce: reproductionSteps,
+        steps_to_reproduce: reproductionSteps || null,
         avg_fps: form.get("avg_fps") ? Number(form.get("avg_fps")) : null,
-        os_name: String(form.get("os_name") || "") || null,
-        gpu_name: String(form.get("gpu_name") || "") || null,
+        os_name: String(form.get("os_name") ?? "").trim() || null,
+        gpu_name: String(form.get("gpu_name") ?? "").trim() || null,
         ram_gb: form.get("ram_gb") ? Number(form.get("ram_gb")) : null,
-        device_name: String(form.get("device_name") || "") || null,
-        browser_name: String(form.get("browser_name") || "") || null,
-      });
-      if (error) throw error;
+        device_name: String(form.get("device_name") ?? "").trim() || null,
+        browser_name: String(form.get("browser_name") ?? "").trim() || null,
+      };
+      const { error } = await supabase.from("bug_reports").insert(cleanPayload);
+      if (error) {
+        console.error("Errore Supabase:", error);
+        throw error;
+      }
       event.currentTarget.reset();
       setMessage("Report inviato.");
     } catch (error) {

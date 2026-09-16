@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ensureProfile, requireBrowserUser } from "@/lib/auth/ensure-profile";
+import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import type { ProjectCategory } from "@/types/database";
 
@@ -32,11 +32,11 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
     }
     try {
       const supabase = createClient();
-      const user = await requireBrowserUser(supabase);
-      await ensureProfile(supabase, user);
-      const { error } = await supabase.from("reviews").insert({
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await ensureProfile(supabase, user);
+      const cleanPayload = {
         project_id: projectId,
-        author_id: user.id,
+        author_id: user?.id ?? null,
         gameplay: scores.gameplay ?? null,
         graphics: scores.graphics ?? null,
         balance: scores.balance ?? null,
@@ -44,9 +44,13 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         usability: scores.usability ?? null,
         usefulness: scores.usefulness ?? null,
         ui_quality: scores.ui_quality ?? null,
-        comment,
-      });
-      if (error) throw error;
+        comment: comment || null,
+      };
+      const { error } = await supabase.from("reviews").insert(cleanPayload);
+      if (error) {
+        console.error("Errore Supabase:", error);
+        throw error;
+      }
       event.currentTarget.reset();
       setMessage("Recensione pubblicata.");
     } catch (error) {
