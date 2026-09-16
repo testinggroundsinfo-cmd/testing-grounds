@@ -36,15 +36,9 @@ export default function DashboardPage() {
   async function deleteProject(project: Project) {
     if (!window.confirm(`Eliminare "${project.title}"?`)) return;
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Devi accedere per eliminare il progetto.");
-      const { error: deleteError } = await supabase
-        .from("projects")
-        .delete()
-        .eq("id", project.id)
-        .eq("owner_id", user.id);
-      if (deleteError) throw deleteError;
+      const response = await fetch(`/api/projects/${project.id}`, { method: "DELETE" });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Impossibile eliminare il progetto.");
       setProjects((current) => current.filter((item) => item.id !== project.id));
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Impossibile eliminare il progetto.");

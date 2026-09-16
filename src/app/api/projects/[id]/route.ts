@@ -81,3 +81,55 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   return NextResponse.json({ project });
 }
+
+export async function DELETE(_request: Request, { params }: RouteContext) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    return NextResponse.json({ error: authError.message }, { status: 401 });
+  }
+  if (!user) {
+    return NextResponse.json({ error: "Autenticazione richiesta." }, { status: 401 });
+  }
+
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("id, slug")
+    .eq("id", id)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  if (projectError) {
+    return NextResponse.json({ error: projectError.message }, { status: 400 });
+  }
+  if (!project) {
+    return NextResponse.json({ error: "Progetto non trovato." }, { status: 404 });
+  }
+
+  const { error: deleteError } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", project.id)
+    .eq("owner_id", user.id);
+
+  if (deleteError) {
+    return NextResponse.json({ error: deleteError.message }, { status: 400 });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  revalidatePath("/dashboard");
+  revalidatePath("/projects/[id]");
+  revalidatePath(`/projects/${project.id}`);
+  revalidatePath(`/projects/${project.slug}`);
+  revalidatePath("/gaming");
+  revalidatePath("/software");
+  revalidatePath("/modding");
+
+  return NextResponse.json({ deleted: true });
+}

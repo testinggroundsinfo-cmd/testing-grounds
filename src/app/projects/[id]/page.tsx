@@ -95,6 +95,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       "id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url, alternative_links",
     )
     .eq("id", id)
+    .eq("is_published", true)
     .maybeSingle();
 
   if (error || !data) {
