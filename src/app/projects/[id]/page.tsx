@@ -14,6 +14,7 @@ type Project = {
   id: string;
   category: "gaming" | "software";
   title: string;
+  short_description: string | null;
   description: string;
   cover_url: string | null;
   youtube_url: string | null;
@@ -68,13 +69,27 @@ function isDownload(kind: DistributionKind) {
   return kind === "zip" || kind === "drive" || kind === "mega";
 }
 
+function getHeroDescription(
+  shortDescription: string | null,
+  description: string,
+) {
+  const shortText = shortDescription?.trim();
+  if (shortText) return shortText;
+
+  const firstSentence = description.trim().match(/^.*?[.!?](?:\s|$)/)?.[0].trim();
+  if (firstSentence && firstSentence.length <= 160) return firstSentence;
+
+  const truncated = description.trim().slice(0, 160).trimEnd();
+  return truncated ? `${truncated}${description.trim().length > 160 ? "..." : ""}` : null;
+}
+
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { id } = await params;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, category, title, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url",
+      "id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url",
     )
     .eq("id", id)
     .maybeSingle();
@@ -84,6 +99,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }
 
   const project = data as Project;
+  const heroDescription = getHeroDescription(
+    project.short_description,
+    project.description,
+  );
   const youtubeEmbedUrl = project.youtube_url
     ? getYoutubeEmbedUrl(project.youtube_url)
     : null;
@@ -106,7 +125,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {project.title}
           </h1>
-          <p className="text-lg text-zinc-300">{project.description}</p>
+          {heroDescription ? (
+            <p className="max-w-2xl text-base text-zinc-300 sm:text-lg">
+              {heroDescription}
+            </p>
+          ) : null}
         </header>
 
         {project.cover_url ? (
