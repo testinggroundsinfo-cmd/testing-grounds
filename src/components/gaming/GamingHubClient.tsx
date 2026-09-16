@@ -9,7 +9,11 @@ import type { PlatformKind } from "@/types/database";
 export type GamingProject = {
   id: string;
   title?: string | null;
+  short_description?: string | null;
   description?: string | null;
+  category?: string | null;
+  project_type?: string | null;
+  is_published?: boolean | null;
   platforms?: PlatformKind[] | null;
   tags?: string[] | null;
   cover_url?: string | null;
@@ -54,9 +58,12 @@ function projectMatchesFilter(project: GamingProject, filter: Filter) {
     return true;
   }
 
-  return (project.tags ?? []).some((tag) =>
-    tag.toLowerCase().replace(/[-_]/g, " ").includes(filter.toLowerCase()),
-  );
+  const normalizedFilter = filter.toLowerCase();
+  return [project.category, ...(project.tags ?? [])]
+    .filter((value): value is string => typeof value === "string")
+    .some((value) =>
+      value.toLowerCase().replace(/[-_]/g, " ").includes(normalizedFilter),
+    );
 }
 
 function ProjectCard({
@@ -108,7 +115,9 @@ function ProjectCard({
             <ArrowRight className="h-5 w-5 shrink-0 text-zinc-500 group-hover:text-accent" />
           </div>
           <p className="line-clamp-2 text-sm text-zinc-400">
-            {project.description || "Nessuna descrizione disponibile."}
+            {project.short_description ||
+              project.description ||
+              "Nessuna descrizione disponibile."}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {(project.platforms ?? []).map((platform) => (
@@ -163,19 +172,11 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
     [filter, normalizedQuery, projects],
   );
 
-  const popular = [...visible]
-    .sort((a, b) =>
-      (b.created_at ?? "").localeCompare(a.created_at ?? ""),
-    )
-    .slice(0, 6);
-  const recent = [...visible]
-    .sort((a, b) =>
-      (b.created_at ?? "").localeCompare(a.created_at ?? ""),
-    )
-    .slice(0, 6);
   const empty = (
     <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
-      Nessun gioco corrisponde ai filtri selezionati.
+      {filter === "Tutti"
+        ? "Nessun gioco presente nel catalogo."
+        : "Nessun gioco presente in questa categoria."}
     </p>
   );
 
@@ -232,15 +233,15 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
       <section className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-accent">
-            🔥 Titoli Più Popolari
+            🎮 Catalogo giochi
           </p>
           <h2 className="mt-1 text-2xl font-semibold">
-            I giochi più seguiti dalla community
+            Tutti i giochi pubblicati
           </h2>
         </div>
-        {popular.length ? (
+        {visible.length ? (
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {popular.map((project, index) => (
+            {visible.map((project, index) => (
               <ProjectCard
                 key={project.id}
                 project={project}
@@ -255,23 +256,6 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
 
       <section className="space-y-4">
         <AdBanner format="horizontal" slotId="gaming-hub-mid" />
-        <div>
-          <p className="text-xs uppercase tracking-widest text-accent">
-            🆕 Nuove Uscite / Indie Corner
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold">
-            Appena pubblicati
-          </h2>
-        </div>
-        {recent.length ? (
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {recent.map((project) => (
-              <ProjectCard key={project.id} project={project} badge="Novità" />
-            ))}
-          </ul>
-        ) : (
-          empty
-        )}
       </section>
     </div>
   );

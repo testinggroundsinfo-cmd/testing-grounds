@@ -12,7 +12,7 @@ export default async function GamingPage() {
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "id, title, description, platforms, tags, cover_url, created_at, development_status",
+        "id, title, short_description, description, category, project_type, platforms, tags, cover_url, created_at, development_status, is_published",
       )
       .eq("category", "gaming")
       .eq("project_type", "project")
