@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import type { ProjectCategory } from "@/types/database";
 
@@ -33,24 +32,22 @@ export function BugForm({
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) await ensureProfile(supabase, user);
       const cleanPayload = {
         project_id: projectId,
-        author_id: user?.id ?? null,
         title: cleanBugTitle || null,
-        kind: String(form.get("kind") || "other").toLowerCase() as never,
-        steps_to_reproduce: cleanReproductionSteps || null,
-        avg_fps: form.get("avg_fps") ? Number(form.get("avg_fps")) : null,
-        os_name: String(form.get("os_name") ?? "").trim() || null,
-        gpu_name: String(form.get("gpu_name") ?? "").trim() || null,
-        ram_gb: form.get("ram_gb") ? Number(form.get("ram_gb")) : null,
-        device_name: String(form.get("device_name") ?? "").trim() || null,
-        browser_name: String(form.get("browser_name") ?? "").trim() || null,
+        bug_type: String(form.get("kind") || "").trim() || null,
+        fps: form.get("avg_fps") ? Number(form.get("avg_fps")) : null,
+        os: String(form.get("os_name") ?? "").trim() || null,
+        gpu: String(form.get("gpu_name") ?? "").trim() || null,
+        ram: form.get("ram_gb") ? Number(form.get("ram_gb")) : null,
+        steps: cleanReproductionSteps || null,
+        user_id: user?.id || null,
       };
-      const { error } = await supabase.from("bug_reports").insert(cleanPayload);
+      const { error } = await supabase.from("project_bugs").insert(cleanPayload);
       if (error) {
-        console.error("Errore Supabase:", error);
-        throw error;
+        console.error("Errore Invio Bug:", error);
+        setMessage(error.message || JSON.stringify(error));
+        return;
       }
       setBugTitle("");
       setReproductionSteps("");
