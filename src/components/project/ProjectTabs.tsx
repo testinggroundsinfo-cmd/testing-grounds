@@ -14,7 +14,7 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]["id"];
 
-export function ProjectTabs({ slug, projectId, category }: { slug: string; projectId: string; category: "gaming" | "software" }) {
+export function ProjectTabs({ projectTitle, projectId, category }: { projectTitle: string; projectId: string; category: "gaming" | "software" }) {
   const [tab, setTab] = useState<TabId>("bugs");
   return (
     <section className="space-y-6">
@@ -35,7 +35,7 @@ export function ProjectTabs({ slug, projectId, category }: { slug: string; proje
             </button>
           ))}
         </div>
-        <ReportProjectButton projectId={projectId} projectSlug={slug} />
+        <ReportProjectButton projectId={projectId} projectTitle={projectTitle} />
       </div>
 
       {tab === "bugs" ? <BugForm category={category} projectId={projectId} /> : null}

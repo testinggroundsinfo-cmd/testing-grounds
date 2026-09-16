@@ -236,7 +236,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         ) : null}
 
         <ProjectTabs
-          slug={project.id}
+          projectTitle={project.title}
           projectId={project.id}
           category={project.category}
         />

@@ -6,23 +6,24 @@ import { createClient } from "@/lib/supabaseClient";
 
 type Props = {
   projectId: string;
-  projectSlug: string;
+  projectTitle: string;
 };
 
-export function ReportProjectButton({ projectId, projectSlug }: Props) {
+export function ReportProjectButton({ projectId, projectTitle }: Props) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [reason, setReason] = useState("malware");
+  const [details, setDetails] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
-    const form = new FormData(event.currentTarget);
-    const reason = String(form.get("reason") ?? "").trim();
-    const details = String(form.get("details") ?? "").trim();
+    const cleanReason = reason.trim();
+    const cleanDetails = details.trim();
 
-    if (!details) {
+    if (!cleanDetails) {
       setMessage("Inserisci i dettagli della segnalazione.");
       setSubmitting(false);
       return;
@@ -34,12 +35,13 @@ export function ReportProjectButton({ projectId, projectSlug }: Props) {
       const { error } = await supabase.from("project_reports").insert({
         project_id: projectId,
         user_id: user?.id || null,
-        reason,
-        details,
+        reason: cleanReason,
+        details: cleanDetails,
       });
       if (error) throw error;
+      setReason("malware");
+      setDetails("");
       setMessage("Segnalazione inviata con successo!");
-      event.currentTarget.reset();
       window.setTimeout(() => setOpen(false), 700);
     } catch (error) {
       console.error("Submit Error:", error);
@@ -68,10 +70,12 @@ export function ReportProjectButton({ projectId, projectSlug }: Props) {
             onSubmit={handleSubmit}
             className="w-full max-w-md space-y-3 rounded-2xl border border-white/10 bg-ink-800 p-6"
           >
-            <h3 className="text-lg font-medium">Segnala {projectSlug}</h3>
+            <h3 className="text-lg font-medium">
+              Segnala {projectTitle || "il progetto"}
+            </h3>
             <select
-              name="reason"
-              defaultValue="malware"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
               className="w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
             >
               <option value="malware">Sospetto malware</option>
@@ -81,7 +85,8 @@ export function ReportProjectButton({ projectId, projectSlug }: Props) {
               <option value="spam">Spam</option>
             </select>
             <textarea
-              name="details"
+              value={details}
+              onChange={(event) => setDetails(event.target.value)}
               rows={4}
               placeholder="Dettagli"
               className="w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
