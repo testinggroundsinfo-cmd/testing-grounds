@@ -1,103 +1,40 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
 import type { Project } from "@/types/database";
 
-type ProfileForm = {
-  full_name: string;
-  bio: string;
-  avatar_url: string;
-  github_url: string;
-  twitter_url: string;
-  website_url: string;
-};
-
-const emptyProfile: ProfileForm = {
-  full_name: "",
-  bio: "",
-  avatar_url: "",
-  github_url: "",
-  twitter_url: "",
-  website_url: "",
-};
-
-function saveErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message) {
-    return `Impossibile salvare il profilo: ${error.message}`;
-  }
-  return "Impossibile salvare il profilo. Controlla la connessione e riprova.";
-}
-
 export default function DashboardPage() {
-  const [profile, setProfile] = useState<ProfileForm>(emptyProfile);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
-  const [projectsLoading, setProjectsLoading] = useState(true);
-  const [projectsError, setProjectsError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    let active = true;
-    async function loadProfile() {
+    async function loadProjects() {
       try {
         const supabase = createClient();
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError) throw authError;
-        if (!user) return;
-
-        const { data } = await supabase
-          .from("profiles")
-          .select(
-            "full_name, bio, avatar_url, github_url, twitter_url, website_url",
-          )
-          .eq("id", user.id)
-          .maybeSingle();
-        const { data: projectData, error: projectsError } = await supabase
+        if (!user) throw new Error("Devi accedere per vedere i tuoi progetti.");
+        const { data, error: queryError } = await supabase
           .from("projects")
           .select("*")
           .eq("owner_id", user.id)
           .order("created_at", { ascending: false });
-        if (projectsError) throw projectsError;
-        const metadata = user.user_metadata ?? {};
-        const metadataName =
-          (typeof metadata.full_name === "string" && metadata.full_name) ||
-          (typeof metadata.display_name === "string" && metadata.display_name) ||
-          "";
-        if (active) {
-          setProfile({
-            full_name: data?.full_name || metadataName,
-            bio: data?.bio ?? "",
-            avatar_url: data?.avatar_url ?? "",
-            github_url: data?.github_url ?? "",
-            twitter_url: data?.twitter_url ?? "",
-            website_url: data?.website_url ?? "",
-          });
-          setProjects((projectData ?? []) as Project[]);
-        }
-      } catch {
-        // Il form resta utilizzabile anche se il profilo non è ancora presente.
+        if (queryError) throw queryError;
+        setProjects((data ?? []) as Project[]);
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Impossibile caricare i progetti.");
       } finally {
-        if (active) setLoading(false);
-        if (active) setProjectsLoading(false);
+        setLoading(false);
       }
     }
-
-    void loadProfile();
-    return () => {
-      active = false;
-    };
+    void loadProjects();
   }, []);
 
   async function deleteProject(project: Project) {
     if (!window.confirm(`Eliminare "${project.title}"?`)) return;
-    setProjectsError("");
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
@@ -110,205 +47,48 @@ export default function DashboardPage() {
       if (deleteError) throw deleteError;
       setProjects((current) => current.filter((item) => item.id !== project.id));
     } catch (deleteError) {
-      setProjectsError(
-        deleteError instanceof Error
-          ? deleteError.message
-          : "Impossibile eliminare il progetto.",
-      );
+      setError(deleteError instanceof Error ? deleteError.message : "Impossibile eliminare il progetto.");
     }
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setMessage("");
-    setError("");
-    try {
-      const supabase = createClient();
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) throw new Error("Devi accedere per salvare il profilo.");
-
-      const metadata = user.user_metadata ?? {};
-      const metadataName =
-        (typeof metadata.full_name === "string" && metadata.full_name) ||
-        (typeof metadata.display_name === "string" && metadata.display_name) ||
-        "";
-      const fullName = profile.full_name.trim() || metadataName;
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          full_name: fullName || "Tester",
-          bio: profile.bio.trim() || null,
-          avatar_url: profile.avatar_url.trim() || null,
-          github_url: profile.github_url.trim() || null,
-          twitter_url: profile.twitter_url.trim() || null,
-          website_url: profile.website_url.trim() || null,
-        }, { onConflict: "id" });
-      if (updateError) throw updateError;
-      setMessage("Profilo aggiornato correttamente.");
-    } catch (saveError) {
-      setError(saveErrorMessage(saveError));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function updateField(field: keyof ProfileForm, value: string) {
-    setProfile((current) => ({ ...current, [field]: value }));
-  }
+  const publishedCount = projects.filter((project) => project.is_published).length;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-accent">
-          Area personale
-        </p>
-        <h1 className="text-3xl font-semibold">Dashboard sviluppatore</h1>
-        <p className="text-sm text-zinc-400">
-          Gestisci il profilo e pubblica giochi, software e mod per la community.
-        </p>
+    <div className="mx-auto max-w-5xl space-y-8">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-accent">Area personale</p>
+          <h1 className="mt-2 text-3xl font-semibold">I miei progetti</h1>
+          <p className="mt-2 text-sm text-zinc-400">Gestisci le tue schede, release e pubblicazioni.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/dashboard/settings" className="rounded-lg border border-white/10 px-4 py-2 text-sm">⚙ Impostazioni Profilo</Link>
+          <Link href="/dashboard/projects/new" className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950">Nuovo progetto</Link>
+        </div>
       </header>
 
-      <section className="rounded-2xl border border-white/10 bg-ink-800 p-6 shadow-panel sm:p-8">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold">I miei progetti</h2>
-            <p className="mt-1 text-sm text-zinc-400">
-              Gestisci pubblicazioni, release e stato delle tue schede.
-            </p>
-          </div>
-          <Link
-            href="/dashboard/projects/new"
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950"
-          >
-            Nuovo progetto
-          </Link>
-        </div>
-        {projectsLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="h-40 animate-pulse rounded-xl bg-white/10" />
-            <div className="h-40 animate-pulse rounded-xl bg-white/10" />
-          </div>
-        ) : projectsError ? (
-          <p role="alert" className="text-sm text-red-300">{projectsError}</p>
-        ) : projects.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
-            Non hai ancora creato progetti.
-          </p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {projects.map((project) => (
-              <article key={project.id} className="rounded-xl border border-white/10 bg-ink-900 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="font-semibold">{project.title}</h3>
-                  <span className="rounded-full bg-white/10 px-2 py-1 text-xs">
-                    {project.is_published ? "Pubblicato" : "Bozza"}
-                  </span>
-                </div>
-                <p className="mt-2 line-clamp-2 text-sm text-zinc-400">
-                  {project.short_description || project.description}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2 text-sm">
-                  <Link href={`/dashboard/projects/${project.id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5">Modifica</Link>
-                  <Link href={`/dashboard/projects/${project.id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5">Release</Link>
-                  <button type="button" onClick={() => void deleteProject(project)} className="rounded-md border border-red-400/30 px-3 py-1.5 text-red-300">Elimina</button>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-white/10 bg-ink-800 p-4"><p className="text-sm text-zinc-400">Totale progetti</p><p className="mt-1 text-2xl font-semibold">{projects.length}</p></div>
+        <div className="rounded-xl border border-white/10 bg-ink-800 p-4"><p className="text-sm text-zinc-400">Pubblicati</p><p className="mt-1 text-2xl font-semibold text-accent">{publishedCount}</p></div>
+        <div className="rounded-xl border border-white/10 bg-ink-800 p-4"><p className="text-sm text-zinc-400">Bozze</p><p className="mt-1 text-2xl font-semibold">{projects.length - publishedCount}</p></div>
+      </div>
 
-      <section className="rounded-2xl border border-white/10 bg-ink-800 p-6 shadow-panel sm:p-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold">Il mio profilo</h2>
-          <p className="mt-1 text-sm text-zinc-400">
-            Queste informazioni saranno visibili nella pagina pubblica del profilo.
-          </p>
-        </div>
-
-        {loading ? (
-          <div className="space-y-4 animate-pulse">
-            <div className="h-10 rounded-lg bg-white/10" />
-            <div className="h-24 rounded-lg bg-white/10" />
-            <div className="h-10 rounded-lg bg-white/10" />
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <label className="block text-sm">
-              Nome completo
-              <input
-                value={profile.full_name}
-                onChange={(event) => updateField("full_name", event.target.value)}
-                maxLength={80}
-                className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
-              />
-            </label>
-            <label className="block text-sm">
-              Bio
-              <textarea
-                value={profile.bio}
-                onChange={(event) => updateField("bio", event.target.value)}
-                rows={4}
-                maxLength={500}
-                className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
-              />
-            </label>
-            <label className="block text-sm">
-              URL avatar
-              <input
-                type="url"
-                value={profile.avatar_url}
-                onChange={(event) => updateField("avatar_url", event.target.value)}
-                className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
-              />
-            </label>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-              {(
-                [
-                  ["github_url", "GitHub URL"],
-                  ["twitter_url", "Twitter / X URL"],
-                  ["website_url", "Sito web"],
-                ] as const
-              ).map(([field, label]) => (
-                <label key={field} className="block text-sm">
-                  {label}
-                  <input
-                    type="url"
-                    value={profile[field]}
-                    onChange={(event) => updateField(field, event.target.value)}
-                    className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
-                  />
-                </label>
-              ))}
+      {loading ? <div className="animate-pulse rounded-xl bg-white/10 p-8 text-sm text-zinc-400">Caricamento progetti...</div> : null}
+      {error ? <p role="alert" className="text-sm text-red-300">{error}</p> : null}
+      {!loading && !error && projects.length === 0 ? <div className="rounded-xl border border-dashed border-white/10 p-8 text-sm text-zinc-400">Non hai ancora creato progetti.</div> : null}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {projects.map((project) => (
+          <article key={project.id} className="rounded-xl border border-white/10 bg-ink-800 p-5">
+            <div className="flex items-start justify-between gap-3"><h2 className="font-semibold">{project.title}</h2><span className="rounded-full bg-white/10 px-2 py-1 text-xs">{project.is_published ? "Pubblicato" : "Bozza"}</span></div>
+            <p className="mt-2 line-clamp-2 text-sm text-zinc-400">{project.short_description || project.description}</p>
+            <div className="mt-4 flex flex-wrap gap-2 text-sm">
+              <Link href={`/dashboard/projects/${project.id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5">Modifica</Link>
+              <Link href={`/dashboard/projects/${project.id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5">Release</Link>
+              <button type="button" onClick={() => void deleteProject(project)} className="rounded-md border border-red-400/30 px-3 py-1.5 text-red-300">Elimina</button>
             </div>
-            <button
-              disabled={saving}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50"
-            >
-              {saving ? "Salvataggio..." : "Salva profilo"}
-            </button>
-            {message ? <p className="text-sm text-accent">{message}</p> : null}
-            {error ? (
-              <p role="alert" className="text-sm text-red-300">
-                {error}
-              </p>
-            ) : null}
-          </form>
-        )}
-      </section>
-
-      <Link
-        href="/dashboard/projects"
-        className="ml-3 inline-flex rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold"
-      >
-        I miei progetti
-      </Link>
+          </article>
+        ))}
+      </div>
     </div>
   );
 }
