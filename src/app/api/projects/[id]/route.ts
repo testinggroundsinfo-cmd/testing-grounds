@@ -118,6 +118,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     .eq("owner_id", user.id);
 
   if (deleteError) {
+    console.error("Errore eliminazione:", deleteError);
     return NextResponse.json({ error: deleteError.message }, { status: 400 });
   }
 

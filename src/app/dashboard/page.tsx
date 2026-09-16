@@ -41,7 +41,10 @@ export default function DashboardPage() {
       if (!response.ok) throw new Error(result.error || "Impossibile eliminare il progetto.");
       setProjects((current) => current.filter((item) => item.id !== project.id));
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Impossibile eliminare il progetto.");
+      const message = deleteError instanceof Error ? deleteError.message : "Impossibile eliminare il progetto.";
+      console.error("Errore eliminazione:", deleteError);
+      setError(message);
+      window.alert(`Eliminazione non riuscita: ${message}`);
     }
   }
 
