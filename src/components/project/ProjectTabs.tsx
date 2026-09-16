@@ -35,7 +35,7 @@ export function ProjectTabs({ slug, projectId, category }: { slug: string; proje
             </button>
           ))}
         </div>
-        <ReportProjectButton projectSlug={slug} />
+        <ReportProjectButton projectId={projectId} projectSlug={slug} />
       </div>
 
       {tab === "bugs" ? <BugForm category={category} projectId={projectId} /> : null}

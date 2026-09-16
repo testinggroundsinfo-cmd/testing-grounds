@@ -34,6 +34,7 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
       event.currentTarget.reset();
       setMessage("Candidatura inviata.");
     } catch (error) {
+      console.error("Submit Error:", error);
       setMessage(error instanceof Error ? error.message : "Invio non riuscito.");
     } finally {
       setSubmitting(false);

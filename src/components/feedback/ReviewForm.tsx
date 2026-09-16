@@ -50,6 +50,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       event.currentTarget.reset();
       setMessage("Recensione pubblicata.");
     } catch (error) {
+      console.error("Submit Error:", error);
       setMessage(error instanceof Error ? error.message : "Pubblicazione non riuscita.");
     } finally {
       setSubmitting(false);

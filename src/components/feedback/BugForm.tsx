@@ -49,6 +49,7 @@ export function BugForm({
       event.currentTarget.reset();
       setMessage("Report inviato.");
     } catch (error) {
+      console.error("Submit Error:", error);
       setMessage(error instanceof Error ? error.message : "Invio non riuscito.");
     } finally {
       setSubmitting(false);
