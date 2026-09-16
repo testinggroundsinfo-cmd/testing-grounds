@@ -29,6 +29,7 @@ type PublicationType =
 type CleanProjectPayload = {
   owner_id: string;
   title: string;
+  short_description: string | null;
   slug: string;
   description: string;
   category: ProjectCategory;
@@ -158,7 +159,7 @@ export default function NewProjectPage() {
     const submitCategory: ProjectCategory =
       category === "software" ? "software" : "gaming";
     const title = String(form.get("title") ?? "").trim();
-    const shortPitch = String(form.get("short_pitch") ?? "").trim();
+    const shortPitch = String(form.get("short_description") ?? "").trim();
     const description = String(form.get("description") ?? "").trim();
     const rawSlug = String(form.get("slug") ?? "").trim();
     const slug = slugify(rawSlug || title);
@@ -239,6 +240,7 @@ export default function NewProjectPage() {
       const cleanData: CleanProjectPayload = {
         owner_id: user.id,
         title,
+        short_description: shortPitch || null,
         slug,
         category: submitCategory,
         project_type: isModding ? "mod" : "project",
@@ -398,16 +400,7 @@ export default function NewProjectPage() {
               </label>
             </div>
             <label className="block text-sm">
-              Cover del gioco (opzionale)
-              <input
-                name="game_cover_url"
-                type="url"
-                placeholder="Se vuoto usa la cover del catalogo"
-                className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
-              />
-            </label>
-            <label className="block text-sm">
-              File mod o link esterno
+              Link esterno / File download
               <input
                 name="mod_file_url"
                 type="url"
@@ -442,7 +435,7 @@ export default function NewProjectPage() {
         <label className="block text-sm">
           Descrizione breve
           <input
-            name="short_pitch"
+            name="short_description"
             required
             minLength={10}
             maxLength={180}
@@ -502,7 +495,7 @@ export default function NewProjectPage() {
           />
         </label>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        {category !== "modding" && publicationType !== "mod" ? <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm">
             Cover URL
             <input
@@ -542,16 +535,16 @@ export default function NewProjectPage() {
               ))}
             </select>
           </label>
-        </div>
+        </div> : null}
 
-        <label className="block text-sm">
+        {category !== "modding" && publicationType !== "mod" ? <label className="block text-sm">
           Link distribuzione
           <input
             name="distribution_link"
             type="url"
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           />
-        </label>
+        </label> : null}
 
         <label className="block text-sm">
           Immagine di copertina

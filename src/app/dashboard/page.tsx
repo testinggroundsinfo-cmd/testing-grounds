@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
+import type { Project } from "@/types/database";
 
 type ProfileForm = {
   full_name: string;
@@ -35,6 +36,9 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -55,6 +59,12 @@ export default function DashboardPage() {
           )
           .eq("id", user.id)
           .maybeSingle();
+        const { data: projectData, error: projectsError } = await supabase
+          .from("projects")
+          .select("*")
+          .eq("owner_id", user.id)
+          .order("created_at", { ascending: false });
+        if (projectsError) throw projectsError;
         const metadata = user.user_metadata ?? {};
         const metadataName =
           (typeof metadata.full_name === "string" && metadata.full_name) ||
@@ -69,18 +79,44 @@ export default function DashboardPage() {
             twitter_url: data?.twitter_url ?? "",
             website_url: data?.website_url ?? "",
           });
+          setProjects((projectData ?? []) as Project[]);
         }
       } catch {
         // Il form resta utilizzabile anche se il profilo non è ancora presente.
       } finally {
         if (active) setLoading(false);
+        if (active) setProjectsLoading(false);
       }
     }
+
     void loadProfile();
     return () => {
       active = false;
     };
   }, []);
+
+  async function deleteProject(project: Project) {
+    if (!window.confirm(`Eliminare "${project.title}"?`)) return;
+    setProjectsError("");
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Devi accedere per eliminare il progetto.");
+      const { error: deleteError } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", project.id)
+        .eq("owner_id", user.id);
+      if (deleteError) throw deleteError;
+      setProjects((current) => current.filter((item) => item.id !== project.id));
+    } catch (deleteError) {
+      setProjectsError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Impossibile eliminare il progetto.",
+      );
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -137,6 +173,56 @@ export default function DashboardPage() {
           Gestisci il profilo e pubblica giochi, software e mod per la community.
         </p>
       </header>
+
+      <section className="rounded-2xl border border-white/10 bg-ink-800 p-6 shadow-panel sm:p-8">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">I miei progetti</h2>
+            <p className="mt-1 text-sm text-zinc-400">
+              Gestisci pubblicazioni, release e stato delle tue schede.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/projects/new"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950"
+          >
+            Nuovo progetto
+          </Link>
+        </div>
+        {projectsLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="h-40 animate-pulse rounded-xl bg-white/10" />
+            <div className="h-40 animate-pulse rounded-xl bg-white/10" />
+          </div>
+        ) : projectsError ? (
+          <p role="alert" className="text-sm text-red-300">{projectsError}</p>
+        ) : projects.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
+            Non hai ancora creato progetti.
+          </p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {projects.map((project) => (
+              <article key={project.id} className="rounded-xl border border-white/10 bg-ink-900 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="font-semibold">{project.title}</h3>
+                  <span className="rounded-full bg-white/10 px-2 py-1 text-xs">
+                    {project.is_published ? "Pubblicato" : "Bozza"}
+                  </span>
+                </div>
+                <p className="mt-2 line-clamp-2 text-sm text-zinc-400">
+                  {project.short_description || project.description}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2 text-sm">
+                  <Link href={`/dashboard/projects/${project.id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5">Modifica</Link>
+                  <Link href={`/dashboard/projects/${project.id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5">Release</Link>
+                  <button type="button" onClick={() => void deleteProject(project)} className="rounded-md border border-red-400/30 px-3 py-1.5 text-red-300">Elimina</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="rounded-2xl border border-white/10 bg-ink-800 p-6 shadow-panel sm:p-8">
         <div className="mb-6">
@@ -217,12 +303,6 @@ export default function DashboardPage() {
         )}
       </section>
 
-      <Link
-        href="/dashboard/projects/new"
-        className="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950"
-      >
-        Pubblica una scheda
-      </Link>
       <Link
         href="/dashboard/projects"
         className="ml-3 inline-flex rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold"

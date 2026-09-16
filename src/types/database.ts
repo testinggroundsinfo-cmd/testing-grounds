@@ -63,6 +63,7 @@ export type Project = {
   owner_id: string;
   category: ProjectCategory;
   title: string;
+  short_description?: string | null;
   slug: string;
   description: string;
   development_status: DevelopmentStatus;

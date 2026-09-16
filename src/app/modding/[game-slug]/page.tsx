@@ -44,6 +44,11 @@ export default async function ModdingGamePage({
   }
 
   const mods = (data ?? []) as ModProject[];
+  const gameCover =
+    game.cover_url ||
+    (game.slug === "minecraft"
+      ? "https://www.minecraft.net/content/dam/games/minecraft/key-art/Java-Edition-Key-Art.jpg"
+      : "");
 
   return (
     <AppShell>
@@ -59,7 +64,7 @@ export default async function ModdingGamePage({
         <header className="overflow-hidden rounded-2xl border border-white/10 bg-ink-800 shadow-panel">
           <div
             className="aspect-[3/1] min-h-40 bg-cover bg-center"
-            style={{ backgroundImage: `url(${game.cover_url})` }}
+            style={{ backgroundImage: `url(${gameCover})` }}
             role="img"
             aria-label={`Cover di ${game.name}`}
           />
@@ -84,7 +89,7 @@ export default async function ModdingGamePage({
                 <div
                   className="aspect-video bg-cover bg-center"
                   style={{
-                    backgroundImage: `url(${mod.cover_url || mod.game_cover_url || game.cover_url})`,
+                    backgroundImage: `url(${mod.cover_url || mod.game_cover_url || gameCover})`,
                   }}
                   role="img"
                   aria-label={`Cover della mod ${mod.title}`}

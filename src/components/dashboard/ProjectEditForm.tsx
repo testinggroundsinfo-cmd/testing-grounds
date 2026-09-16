@@ -35,6 +35,7 @@ export default function ProjectEditForm({ project }: Props) {
 
       const cleanData = {
         title,
+        short_description: valueOrNull(String(form.get("short_description") ?? "")),
         slug: String(form.get("slug") ?? "").trim() || project.slug,
         description,
         youtube_url: valueOrNull(String(form.get("youtube_url") ?? "")),
@@ -69,6 +70,7 @@ export default function ProjectEditForm({ project }: Props) {
       }
       setMessage("Progetto aggiornato correttamente.");
       router.refresh();
+      router.push("/dashboard/projects");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Impossibile aggiornare il progetto.");
     } finally {
@@ -80,6 +82,7 @@ export default function ProjectEditForm({ project }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-white/10 bg-ink-800 p-6">
       <label className="block text-sm">Titolo<input name="title" required defaultValue={project.title} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
       <label className="block text-sm">Slug<input name="slug" required defaultValue={project.slug} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
+      <label className="block text-sm">Descrizione breve<input name="short_description" defaultValue={project.short_description ?? ""} maxLength={180} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
       <label className="block text-sm">Descrizione<textarea name="description" required defaultValue={project.description} rows={7} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">YouTube URL<input name="youtube_url" type="url" defaultValue={project.youtube_url ?? ""} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
