@@ -8,6 +8,7 @@ import { GlobalProjectSearch } from "@/components/layout/GlobalProjectSearch";
 import { LanguageSelector } from "@/components/i18n/LanguageSelector";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { createClient } from "@/lib/supabaseClient";
+import { PublishSlotsBadge } from "@/components/layout/PublishSlotsBadge";
 import type { User } from "@supabase/supabase-js";
 
 
@@ -61,6 +62,7 @@ export function SiteHeader() {
           <LanguageSelector />
           {user ? (
             <>
+              <PublishSlotsBadge user={user} />
               <Link
                 href="/dashboard"
                 className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15"
@@ -115,6 +117,7 @@ export function SiteHeader() {
             <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-4 text-sm text-zinc-300">
               {user ? (
                 <>
+                  <PublishSlotsBadge user={user} />
                   <Link
                     href="/dashboard"
                     onClick={closeMobileMenu}

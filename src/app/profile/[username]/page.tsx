@@ -3,7 +3,7 @@ import { ArrowLeft, ExternalLink, Globe, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { createClient } from "@/lib/supabase/server";
-import type { PlatformKind, ProjectCategory } from "@/types/database";
+import type { PlatformKind, ProjectCategory, ProjectType } from "@/types/database";
 
 type ProfilePageProps = {
   params: Promise<{ username: string }>;
@@ -26,6 +26,8 @@ type PublishedProject = {
   description: string;
   platforms: PlatformKind[];
   cover_url: string | null;
+  project_type: ProjectType | null;
+  game_title: string | null;
 };
 
 const platformLabels: Record<PlatformKind, string> = {
@@ -56,7 +58,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { data: projects, error: projectsError } = await supabase
     .from("projects")
     .select(
-      "id, title, category, slug, description, platforms, cover_url",
+      "id, title, category, slug, description, platforms, cover_url, project_type, game_title",
     )
     .eq("owner_id", profile.id)
     .eq("is_published", true)
@@ -164,9 +166,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     <div className="space-y-3 p-5">
                       <div>
                         <p className="text-xs uppercase tracking-widest text-zinc-500">
-                          {project.category === "gaming"
-                            ? "Playtest"
-                            : "Software"}
+                          {project.project_type === "mod"
+                            ? project.game_title
+                              ? `Mod \u00b7 ${project.game_title}`
+                              : "Mod"
+                            : project.category === "gaming"
+                              ? "Playtest"
+                              : "Software"}
                         </p>
                         <h3 className="mt-1 text-lg font-medium text-white group-hover:text-accent">
                           {project.title}

@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { Loader2, Search, X } from "lucide-react";
+import { Loader2, Search, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
 import { useLocale } from "@/components/i18n/LocaleProvider";
@@ -13,11 +13,19 @@ type SearchProject = {
   category: "gaming" | "software";
 };
 
+type SearchProfile = {
+  id: string;
+  username: string;
+  full_name: string;
+  avatar_url: string | null;
+};
+
 export function GlobalProjectSearch() {
   const { t } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchProject[]>([]);
+  const [profileResults, setProfileResults] = useState<SearchProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -26,6 +34,7 @@ export function GlobalProjectSearch() {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) {
       setResults([]);
+      setProfileResults([]);
       setLoading(false);
       setError("");
       return;
@@ -37,7 +46,7 @@ export function GlobalProjectSearch() {
       setError("");
       const supabase = createClient();
 
-      const [titleSearch, tagSearch, platformSearch] = await Promise.all([
+      const [titleSearch, tagSearch, platformSearch, profileSearch] = await Promise.all([
         supabase
           .from("projects")
           .select("id, title, cover_url, category")
@@ -56,13 +65,20 @@ export function GlobalProjectSearch() {
           .contains("platforms", [trimmedQuery.toLowerCase()])
           .eq("is_published", true)
           .limit(8),
+        supabase
+          .from("profiles")
+          .select("id, username, full_name, avatar_url")
+          .or(`username.ilike.%${trimmedQuery}%,full_name.ilike.%${trimmedQuery}%`)
+          .limit(5),
       ]);
 
       if (cancelled) return;
 
-      const firstError = titleSearch.error ?? tagSearch.error ?? platformSearch.error;
+      const firstError =
+        titleSearch.error ?? tagSearch.error ?? platformSearch.error ?? profileSearch.error;
       if (firstError) {
         setResults([]);
+        setProfileResults([]);
         setError(t("search.error"));
       } else {
         const merged = new Map<string, SearchProject>();
@@ -74,6 +90,7 @@ export function GlobalProjectSearch() {
           merged.set(project.id, project);
         }
         setResults(Array.from(merged.values()).slice(0, 8));
+        setProfileResults((profileSearch.data ?? []) as SearchProfile[]);
       }
       setLoading(false);
     }, 300);
@@ -96,6 +113,7 @@ export function GlobalProjectSearch() {
   }, []);
 
   const showMenu = open && query.trim().length > 0;
+  const hasResults = results.length > 0 || profileResults.length > 0;
 
   return (
     <div
@@ -144,41 +162,86 @@ export function GlobalProjectSearch() {
             </div>
           ) : error ? (
             <p className="px-4 py-4 text-sm text-red-300">{error}</p>
-          ) : results.length > 0 ? (
-            <ul
+          ) : hasResults ? (
+            <div
               id="global-project-search-results"
               role="listbox"
-              className="max-h-80 overflow-y-auto py-1"
+              className="max-h-96 overflow-y-auto py-1"
             >
-              {results.map((project) => (
-                <li key={project.id} role="option" aria-selected={false}>
-                  <Link
-                    href={`/projects/${project.id}`}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 transition hover:bg-white/10"
-                  >
-                    <div
-                      className="h-11 w-14 shrink-0 rounded-md border border-white/10 bg-ink-700 bg-cover bg-center"
-                      style={
-                        project.cover_url
-                          ? { backgroundImage: `url(${project.cover_url})` }
-                          : undefined
-                      }
-                      aria-hidden
-                    >
-                      {!project.cover_url ? (
-                        <span className="flex h-full items-center justify-center text-[9px] uppercase text-zinc-500">
-                          {project.category}
-                        </span>
-                      ) : null}
-                    </div>
-                    <span className="truncate text-sm text-zinc-100">
-                      {project.title}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+              {profileResults.length > 0 ? (
+                <div>
+                  <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
+                    {t("search.creatorsHeading")}
+                  </p>
+                  <ul>
+                    {profileResults.map((profile) => (
+                      <li key={profile.id} role="option" aria-selected={false}>
+                        <Link
+                          href={`/profile/${profile.username}`}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 transition hover:bg-white/10"
+                        >
+                          <div
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-ink-700 bg-cover bg-center text-zinc-500"
+                            style={
+                              profile.avatar_url
+                                ? { backgroundImage: `url(${profile.avatar_url})` }
+                                : undefined
+                            }
+                            aria-hidden
+                          >
+                            {!profile.avatar_url ? <UserRound className="h-4 w-4" /> : null}
+                          </div>
+                          <span className="min-w-0 truncate text-sm text-zinc-100">
+                            {profile.full_name}
+                            <span className="ml-1.5 text-xs text-zinc-500">@{profile.username}</span>
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {results.length > 0 ? (
+                <div>
+                  {profileResults.length > 0 ? (
+                    <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
+                      {t("search.projectsHeading")}
+                    </p>
+                  ) : null}
+                  <ul>
+                    {results.map((project) => (
+                      <li key={project.id} role="option" aria-selected={false}>
+                        <Link
+                          href={`/projects/${project.id}`}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 transition hover:bg-white/10"
+                        >
+                          <div
+                            className="h-11 w-14 shrink-0 rounded-md border border-white/10 bg-ink-700 bg-cover bg-center"
+                            style={
+                              project.cover_url
+                                ? { backgroundImage: `url(${project.cover_url})` }
+                                : undefined
+                            }
+                            aria-hidden
+                          >
+                            {!project.cover_url ? (
+                              <span className="flex h-full items-center justify-center text-[9px] uppercase text-zinc-500">
+                                {project.category}
+                              </span>
+                            ) : null}
+                          </div>
+                          <span className="truncate text-sm text-zinc-100">
+                            {project.title}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
           ) : (
             <p className="px-4 py-4 text-sm text-zinc-400">
               {t("search.noResults")}
