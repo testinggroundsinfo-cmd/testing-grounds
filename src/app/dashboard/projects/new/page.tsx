@@ -46,6 +46,8 @@ type CleanProjectPayload = {
   alternative_links: AlternativeLink[];
   mod_version: string | null;
   compatibility: string | null;
+  mod_type: string | null;
+  mod_dependencies: string | null;
   game_slug: string | null;
   game_title: string | null;
   game_cover_url: string | null;
@@ -330,6 +332,10 @@ export default function NewProjectPage() {
         is_published: form.get("is_published") === "on",
         mod_version: isModding ? optionalValue(form, "mod_version") : null,
         compatibility: isModding ? optionalValue(form, "compatibility") : null,
+        mod_type: isModding ? optionalValue(form, "mod_type") : null,
+        mod_dependencies: isModding
+          ? optionalValue(form, "mod_dependencies")
+          : null,
         game_slug: isModding ? selectedGame?.slug || null : null,
         game_title: isModding ? selectedGame?.name || null : null,
         game_cover_url: isModding
@@ -472,7 +478,38 @@ export default function NewProjectPage() {
                   className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
                 />
               </label>
+              <label className="text-sm">
+                Tipo di mod
+                <select
+                  name="mod_type"
+                  required
+                  defaultValue=""
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
+                >
+                  <option value="" disabled>
+                    Seleziona il tipo
+                  </option>
+                  <option value="content">Contenuto / espansione</option>
+                  <option value="gameplay">Gameplay</option>
+                  <option value="visual">Grafica / shader</option>
+                  <option value="ui">Interfaccia</option>
+                  <option value="utility">Utility / quality of life</option>
+                  <option value="total_conversion">Total conversion</option>
+                </select>
+              </label>
             </div>
+            <label className="block text-sm">
+              Dipendenze richieste <span className="text-zinc-500">(opzionale)</span>
+              <input
+                name="mod_dependencies"
+                maxLength={500}
+                placeholder="Es. Fabric API 0.102+, Mod Menu"
+                className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
+              />
+              <span className="mt-1 block text-xs text-zinc-500">
+                Indica loader, librerie o altre mod necessarie.
+              </span>
+            </label>
             <label className="block text-sm">
               Link esterno / File download
               <input

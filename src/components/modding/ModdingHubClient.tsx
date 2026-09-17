@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Search, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ModdingGame } from "@/data/modding-games";
 
 type Activity = { count: number; interactions: number; latest: string };
@@ -25,7 +25,7 @@ export function ModdingHubClient({
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
-  const [carouselPage, setCarouselPage] = useState(0);
+  const carouselRef = useRef<HTMLUListElement>(null);
   const normalizedQuery = query.trim().toLowerCase();
 
   const filteredGames = useMemo(
@@ -40,23 +40,25 @@ export function ModdingHubClient({
       }),
     [filter, games, normalizedQuery],
   );
-  const carouselPageCount = Math.max(1, Math.ceil(filteredGames.length / 6));
-  const activeCarouselPage = Math.min(carouselPage, carouselPageCount - 1);
-  const carouselGames = filteredGames.slice(
-    activeCarouselPage * 6,
-    activeCarouselPage * 6 + 6,
-  );
   const featured = filteredGames[0];
+
+  function scrollCarousel(direction: 1 | -1) {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+    carousel.scrollBy({ left: direction * carousel.clientWidth, behavior: "smooth" });
+  }
 
   function GameCard({
     item,
     badge,
+    carousel = false,
   }: {
     item: GameItem;
     badge: "Popolare" | "Nuovo" | "Trending";
+    carousel?: boolean;
   }) {
     return (
-      <li>
+      <li className={carousel ? "w-[82%] shrink-0 snap-start sm:w-[31%] xl:w-[calc((100%_-_5rem)/6)]" : undefined}>
         <Link
           href={`/modding/${item.game.slug}`}
           className="group relative block h-full overflow-hidden rounded-2xl border border-white/10 bg-ink-800 transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-panel"
@@ -140,7 +142,7 @@ export function ModdingHubClient({
           </div>
           <div className="flex flex-wrap gap-2">
             {filters.map((item) => (
-              <button key={item} type="button" onClick={() => { setFilter(item); setCarouselPage(0); }} className={`rounded-full px-3 py-1.5 text-xs transition ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{item}</button>
+              <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3 py-1.5 text-xs transition ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{item}</button>
             ))}
           </div>
         </div>
@@ -156,40 +158,45 @@ export function ModdingHubClient({
               {filter === "Tutti" ? "Esplora il catalogo" : `Giochi ${filter}`}
             </h2>
           </div>
-          {filter === "Tutti" && carouselPageCount > 1 ? (
+          {filter === "Tutti" && filteredGames.length > 6 ? (
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                aria-label="Pagina precedente"
-                onClick={() => setCarouselPage((page) => Math.max(0, page - 1))}
-                disabled={activeCarouselPage === 0}
-                className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Scorri giochi precedenti"
+                onClick={() => scrollCarousel(-1)}
+                className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-xs text-zinc-400">
-                {activeCarouselPage + 1} / {carouselPageCount}
-              </span>
               <button
                 type="button"
-                aria-label="Pagina successiva"
-                onClick={() => setCarouselPage((page) => Math.min(carouselPageCount - 1, page + 1))}
-                disabled={activeCarouselPage === carouselPageCount - 1}
-                className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Scorri giochi successivi"
+                onClick={() => scrollCarousel(1)}
+                className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           ) : null}
         </div>
-        {filteredGames.length ? (
-          <ul className={filter === "Tutti" ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" : "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4"}>
-            {(filter === "Tutti" ? carouselGames : filteredGames).map((item, index) => (
+        {filteredGames.length ? filter === "Tutti" ? (
+          <ul
+            ref={carouselRef}
+            className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:thin]"
+          >
+            {filteredGames.map((item, index) => (
               <GameCard
                 key={item.game.slug}
                 item={item}
-                badge={filter === "Tutti" && index < 3 ? "Trending" : "Popolare"}
+                badge={index < 3 ? "Trending" : "Popolare"}
+                carousel
               />
+            ))}
+          </ul>
+        ) : (
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+            {filteredGames.map((item) => (
+              <GameCard key={item.game.slug} item={item} badge="Popolare" />
             ))}
           </ul>
         ) : (

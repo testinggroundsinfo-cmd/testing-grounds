@@ -16,6 +16,8 @@ type ModProject = {
   description: string;
   mod_version: string;
   compatibility: string;
+  mod_type: string | null;
+  mod_dependencies: string | null;
   mod_file_url: string | null;
   game_cover_url: string | null;
   cover_url: string | null;
@@ -32,7 +34,7 @@ export default async function ModdingGamePage({
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, title, slug, description, mod_version, compatibility, mod_file_url, game_cover_url, cover_url",
+      "id, title, slug, description, mod_version, compatibility, mod_type, mod_dependencies, mod_file_url, game_cover_url, cover_url",
     )
     .eq("project_type", "mod")
     .eq("game_slug", game.slug)
@@ -114,7 +116,18 @@ export default async function ModdingGamePage({
                       <Puzzle className="h-3.5 w-3.5 text-accent" />
                       Mod
                     </span>
+                    {mod.mod_type ? (
+                      <span className="rounded-full bg-white/5 px-2.5 py-1">
+                        {mod.mod_type.replaceAll("_", " ")}
+                      </span>
+                    ) : null}
                   </div>
+                  {mod.mod_dependencies ? (
+                    <p className="text-xs text-zinc-400">
+                      <strong className="font-medium text-zinc-300">Dipendenze:</strong>{" "}
+                      {mod.mod_dependencies}
+                    </p>
+                  ) : null}
                   <p className="line-clamp-3 text-sm leading-relaxed text-zinc-400">
                     {mod.description}
                   </p>

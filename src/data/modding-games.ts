@@ -10,7 +10,7 @@ const steamCover = (appId: number) =>
   `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/library_600x900.jpg`;
 
 export const MINECRAFT_FALLBACK_COVER =
-  "https://www.minecraft.net/content/dam/games/minecraft/key-art/Java-Edition-Key-Art.jpg";
+  "/images/minecraft-fallback.svg";
 
 const coverUrls: Record<string, string> = {
   // Minecraft is not distributed through Steam; use Mojang's official key art.

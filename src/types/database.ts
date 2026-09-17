@@ -82,6 +82,8 @@ export type Project = {
   game_title?: string | null;
   mod_version?: string | null;
   compatibility?: string | null;
+  mod_type?: string | null;
+  mod_dependencies?: string | null;
   game_cover_url?: string | null;
   mod_file_url?: string | null;
   notify_new_bugs?: boolean;

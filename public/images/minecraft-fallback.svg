@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title">
+  <title id="title">Copertina fallback per mod Minecraft</title>
+  <rect width="1600" height="900" fill="#1b2d3a"/>
+  <rect y="420" width="1600" height="480" fill="#4a7041"/>
+  <path fill="#315636" d="M0 540h180v-110h180v80h210V360h180v140h200v-90h190v130h170V390h190v510H0z"/>
+  <path fill="#745039" d="M0 710h190v-80h220v120h260v-95h220v115h250v-70h210v300H0z"/>
+  <g fill="#85b34f">
+    <rect x="100" y="490" width="120" height="70"/>
+    <rect x="460" y="460" width="160" height="90"/>
+    <rect x="1020" y="490" width="140" height="70"/>
+    <rect x="1330" y="445" width="170" height="100"/>
+  </g>
+  <rect x="92" y="92" width="660" height="190" rx="20" fill="#101820" fill-opacity=".78"/>
+  <text x="145" y="172" fill="#d6ff72" font-family="Arial, sans-serif" font-size="70" font-weight="700">MINECRAFT MODS</text>
+  <text x="148" y="235" fill="#e5e7eb" font-family="Arial, sans-serif" font-size="34">Testing Grounds</text>
+</svg>
