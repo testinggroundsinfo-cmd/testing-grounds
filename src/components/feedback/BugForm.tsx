@@ -1,7 +1,9 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
+import { FormAlert } from "@/components/ui/FormAlert";
 import type { ProjectCategory } from "@/types/database";
 
 export function BugForm({
@@ -13,6 +15,7 @@ export function BugForm({
 }) {
   const isGame = category === "gaming";
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"success" | "error" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [bugTitle, setBugTitle] = useState("");
   const [reproductionSteps, setReproductionSteps] = useState("");
@@ -21,6 +24,7 @@ export function BugForm({
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
+    setStatus(null);
     const form = new FormData(event.currentTarget);
     const optionalText = (name: string) => String(form.get(name) ?? "").trim() || null;
     const optionalNumber = (name: string) => {
@@ -33,6 +37,7 @@ export function BugForm({
     const cleanReproductionSteps = reproductionSteps.trim();
     if (!cleanBugTitle && !cleanReproductionSteps) {
       setMessage("Compila almeno un campo prima di inviare.");
+      setStatus("error");
       setSubmitting(false);
       return;
     }
@@ -59,14 +64,17 @@ export function BugForm({
       if (error) {
         console.error("Errore Invio Bug:", error);
         setMessage(error.message || JSON.stringify(error));
+        setStatus("error");
         return;
       }
       setBugTitle("");
       setReproductionSteps("");
-      setMessage("Report inviato.");
+      setMessage("Report inviato, grazie per la segnalazione!");
+      setStatus("success");
     } catch (error) {
       console.error("Submit Error:", error);
       setMessage(error instanceof Error ? error.message : "Invio non riuscito.");
+      setStatus("error");
     } finally {
       setSubmitting(false);
     }
@@ -135,10 +143,11 @@ export function BugForm({
         Passaggi per riprodurlo
         <textarea name="steps" value={reproductionSteps} onChange={(event) => setReproductionSteps(event.target.value)} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
-      <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
-        {submitting ? "Invio..." : "Invia report"}
+      <button disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
+        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {submitting ? "Invio in corso..." : "Invia report"}
       </button>
-      {message ? <p className="text-sm text-zinc-300">{message}</p> : null}
+      {message ? <FormAlert variant={status ?? "success"} message={message} /> : null}
     </form>
   );
 }

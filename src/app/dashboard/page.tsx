@@ -79,6 +79,7 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between gap-3"><h2 className="font-semibold">{project.title}</h2><span className="rounded-full bg-white/10 px-2 py-1 text-xs">{project.is_published ? "Pubblicato" : "Bozza"}</span></div>
             <p className="mt-2 line-clamp-2 text-sm text-zinc-400">{project.short_description || project.description}</p>
             <div className="mt-4 flex flex-wrap gap-2 text-sm">
+              <Link href={`/dashboard/projects/${project.id}`} className="rounded-md border border-white/10 px-3 py-1.5">Candidature</Link>
               <Link href={`/dashboard/projects/${project.id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5">Modifica</Link>
               <Link href={`/dashboard/projects/${project.id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5">Release</Link>
               <button type="button" onClick={() => void deleteProject(project)} className="rounded-md border border-red-400/30 px-3 py-1.5 text-red-300">Elimina</button>

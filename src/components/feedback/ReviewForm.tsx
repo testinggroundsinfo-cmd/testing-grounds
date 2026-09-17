@@ -1,12 +1,15 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
+import { FormAlert } from "@/components/ui/FormAlert";
 import type { ProjectCategory } from "@/types/database";
 
 export function ReviewForm({ category, projectId }: { category: ProjectCategory; projectId: string }) {
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"success" | "error" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [comment, setComment] = useState("");
   const [scoreValues, setScoreValues] = useState<Record<string, string>>({});
@@ -18,6 +21,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
+    setStatus(null);
     const cleanComment = comment.trim();
     const scores = Object.fromEntries(
       fields
@@ -29,6 +33,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
     );
     if (!cleanComment && !Object.values(scores).some((score) => score !== null)) {
       setMessage("Compila almeno un campo prima di inviare.");
+      setStatus("error");
       setSubmitting(false);
       return;
     }
@@ -76,10 +81,12 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       }
       setComment("");
       setScoreValues({});
-      setMessage("Recensione pubblicata.");
+      setMessage("Recensione pubblicata, grazie per il tuo feedback!");
+      setStatus("success");
     } catch (error) {
       console.error("Submit Error:", error);
       setMessage(error instanceof Error ? error.message : "Pubblicazione non riuscita.");
+      setStatus("error");
     } finally {
       setSubmitting(false);
     }
@@ -108,10 +115,11 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         Suggerimenti e critiche costruttive
         <textarea name="comment" value={comment} onChange={(event) => setComment(event.target.value)} maxLength={4000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
-      <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
-        {submitting ? "Pubblicazione..." : "Pubblica recensione"}
+      <button disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
+        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {submitting ? "Pubblicazione in corso..." : "Pubblica recensione"}
       </button>
-      {message ? <p className="text-sm text-zinc-300">{message}</p> : null}
+      {message ? <FormAlert variant={status ?? "success"} message={message} /> : null}
     </form>
   );
 }

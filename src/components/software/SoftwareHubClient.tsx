@@ -37,17 +37,23 @@ function getCategory(project: SoftwareProject): Exclude<Filter, "Tutti"> {
   return "Utility";
 }
 
+type SortOrder = "newest" | "oldest";
+
 export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const visible = useMemo(() => projects.filter((project) => {
-    const matchesQuery = !query.trim() ||
-      `${project.title ?? ""} ${project.description ?? ""} ${(project.tags ?? []).join(" ")}`
-        .toLowerCase().includes(query.trim().toLowerCase());
+    const searchable = `${project.title ?? ""} ${project.description ?? ""} ${(project.tags ?? []).join(" ")} ${(project.platforms ?? [])
+      .map((platform) => platformLabels[platform] ?? platform)
+      .join(" ")}`.toLowerCase();
+    const matchesQuery = !query.trim() || searchable.includes(query.trim().toLowerCase());
     return matchesQuery && (filter === "Tutti" || getCategory(project) === filter);
-  }), [filter, projects, query]);
-  const popular = [...visible].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")).slice(0, 6);
-  const recent = [...visible].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")).slice(0, 6);
+  }).sort((a, b) => {
+    const dateA = a.created_at ?? "";
+    const dateB = b.created_at ?? "";
+    return sortOrder === "newest" ? dateB.localeCompare(dateA) : dateA.localeCompare(dateB);
+  }), [filter, projects, query, sortOrder]);
 
   function Card({ project, badge }: { project: SoftwareProject; badge: "Trending" | "Popolare" | "Novità" }) {
     return (
@@ -80,7 +86,13 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
     );
   }
 
-  const empty = <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Nessun software corrisponde ai filtri selezionati.</p>;
+  const empty = (
+    <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
+      {filter === "Tutti"
+        ? "Nessun software presente nel catalogo."
+        : "Nessun software presente in questa categoria."}
+    </p>
+  );
   return (
     <div className="space-y-10">
       <header className="rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/15 via-ink-800 to-ink-900 p-6 shadow-panel sm:p-10">
@@ -90,17 +102,24 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
         <Link href="/dashboard/projects/new?type=software" className="mt-6 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 hover:bg-accent-dim">Pubblica il tuo Software</Link>
       </header>
       <section className="space-y-4">
-        <div className="relative max-w-md"><Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cerca software..." aria-label="Cerca software" className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" /></div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative max-w-md flex-1"><Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cerca software per titolo, tag o piattaforma..." aria-label="Cerca software" className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" /></div>
+          <label className="flex items-center gap-2 text-xs text-zinc-400">
+            Ordina per
+            <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as SortOrder)} className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-accent/50">
+              <option value="newest">Più recenti</option>
+              <option value="oldest">Meno recenti</option>
+            </select>
+          </label>
+        </div>
         <div className="flex flex-wrap gap-2">{filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3 py-1.5 text-xs ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{item}</button>)}</div>
       </section>
       <section className="space-y-4">
-        <div><p className="text-xs uppercase tracking-widest text-accent">🔥 Software Più Popolari</p><h2 className="mt-1 text-2xl font-semibold">In evidenza</h2></div>
-        {popular.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{popular.map((project, index) => <Card key={project.id} project={project} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : empty}
+        <div><p className="text-xs uppercase tracking-widest text-accent">🔥 Catalogo software</p><h2 className="mt-1 text-2xl font-semibold">Tutti i software pubblicati</h2></div>
+        {visible.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{visible.map((project, index) => <Card key={project.id} project={project} badge={index < 3 ? "Trending" : index === 3 ? "Novità" : "Popolare"} />)}</ul> : empty}
       </section>
       <section className="space-y-4">
         <AdBanner format="horizontal" slotId="software-hub-mid" />
-        <div><p className="text-xs uppercase tracking-widest text-accent">🆕 Nuove Uscite / Più Recenti</p><h2 className="mt-1 text-2xl font-semibold">Appena pubblicati</h2></div>
-        {recent.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{recent.map((project) => <Card key={project.id} project={project} badge="Novità" />)}</ul> : empty}
       </section>
     </div>
   );

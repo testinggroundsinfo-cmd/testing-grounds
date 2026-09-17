@@ -49,7 +49,7 @@ export default function MyProjectsPage() {
             <div className="space-y-3 p-4">
               <div className="flex items-start justify-between gap-3"><h2 className="font-semibold">{project.title}</h2><span className={`rounded-full px-2 py-1 text-xs ${project.is_published ? "bg-accent/20 text-accent" : "bg-white/10 text-zinc-300"}`}>{project.is_published ? "Pubblicato" : "Bozza"}</span></div>
               <p className="line-clamp-2 text-sm text-zinc-400">{project.description}</p>
-              <div className="flex flex-wrap gap-2 text-sm"><Link href={`/dashboard/projects/${project.id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5">Modifica</Link><Link href={`/dashboard/projects/${project.id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5">Release</Link><Link href={`/projects/${project.id}`} className="rounded-md border border-white/10 px-3 py-1.5">Visualizza</Link></div>
+              <div className="flex flex-wrap gap-2 text-sm"><Link href={`/dashboard/projects/${project.id}`} className="rounded-md border border-white/10 px-3 py-1.5">Candidature</Link><Link href={`/dashboard/projects/${project.id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5">Modifica</Link><Link href={`/dashboard/projects/${project.id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5">Release</Link><Link href={`/projects/${project.id}`} className="rounded-md border border-white/10 px-3 py-1.5">Visualizza</Link></div>
             </div>
           </article>
         ))}

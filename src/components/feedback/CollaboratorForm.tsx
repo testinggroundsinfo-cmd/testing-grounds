@@ -1,11 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
+import { FormAlert } from "@/components/ui/FormAlert";
 
 export function CollaboratorForm({ projectId }: { projectId: string }) {
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"success" | "error" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [applicationMessage, setApplicationMessage] = useState("");
   const [portfolioUrl, setPortfolioUrl] = useState("");
@@ -13,11 +16,13 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
+    setStatus(null);
     const form = new FormData(event.currentTarget);
     const cleanApplicationMessage = applicationMessage.trim();
     const cleanPortfolioUrl = portfolioUrl.trim();
     if (!cleanApplicationMessage && !cleanPortfolioUrl) {
       setMessage("Compila almeno un campo prima di inviare.");
+      setStatus("error");
       setSubmitting(false);
       return;
     }
@@ -56,10 +61,12 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
       }
       setApplicationMessage("");
       setPortfolioUrl("");
-      setMessage("Candidatura inviata.");
+      setMessage("Candidatura inviata, lo sviluppatore la riceverà in dashboard.");
+      setStatus("success");
     } catch (error) {
       console.error("Submit Error:", error);
       setMessage(error instanceof Error ? error.message : "Invio non riuscito.");
+      setStatus("error");
     } finally {
       setSubmitting(false);
     }
@@ -90,10 +97,11 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
         Portfolio / link
         <input name="portfolio_url" value={portfolioUrl} onChange={(event) => setPortfolioUrl(event.target.value)} type="url" className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
-      <button disabled={submitting} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
-        {submitting ? "Invio..." : "Invia candidatura"}
+      <button disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
+        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {submitting ? "Invio in corso..." : "Invia candidatura"}
       </button>
-      {message ? <p className="text-sm text-zinc-300">{message}</p> : null}
+      {message ? <FormAlert variant={status ?? "success"} message={message} /> : null}
     </form>
   );
 }

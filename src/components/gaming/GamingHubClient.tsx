@@ -172,23 +172,36 @@ function ProjectCard({
   );
 }
 
+type SortOrder = "newest" | "oldest";
+
 export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const normalizedQuery = query.trim().toLowerCase();
 
   const visible = useMemo(
     () =>
-      projects.filter((project) => {
-        const searchable = `${project.title ?? ""} ${
-          project.description ?? ""
-        } ${(project.tags ?? []).join(" ")}`.toLowerCase();
-        return (
-          (!normalizedQuery || searchable.includes(normalizedQuery)) &&
-          projectMatchesFilter(project, filter)
-        );
-      }),
-    [filter, normalizedQuery, projects],
+      projects
+        .filter((project) => {
+          const searchable = `${project.title ?? ""} ${
+            project.description ?? ""
+          } ${(project.tags ?? []).join(" ")} ${(project.platforms ?? [])
+            .map((platform) => platformLabels[platform] ?? platform)
+            .join(" ")}`.toLowerCase();
+          return (
+            (!normalizedQuery || searchable.includes(normalizedQuery)) &&
+            projectMatchesFilter(project, filter)
+          );
+        })
+        .sort((a, b) => {
+          const dateA = a.created_at ?? "";
+          const dateB = b.created_at ?? "";
+          return sortOrder === "newest"
+            ? dateB.localeCompare(dateA)
+            : dateA.localeCompare(dateB);
+        }),
+    [filter, normalizedQuery, projects, sortOrder],
   );
 
   const empty = (
@@ -221,15 +234,28 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
       </header>
 
       <section className="space-y-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cerca un gioco..."
-            aria-label="Cerca un gioco"
-            className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50"
-          />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative max-w-md flex-1">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Cerca un gioco per titolo, tag o piattaforma..."
+              aria-label="Cerca un gioco"
+              className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50"
+            />
+          </div>
+          <label className="flex items-center gap-2 text-xs text-zinc-400">
+            Ordina per
+            <select
+              value={sortOrder}
+              onChange={(event) => setSortOrder(event.target.value as SortOrder)}
+              className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-accent/50"
+            >
+              <option value="newest">Più recenti</option>
+              <option value="oldest">Meno recenti</option>
+            </select>
+          </label>
         </div>
         <div className="flex flex-wrap gap-2">
           {filters.map((item) => (
