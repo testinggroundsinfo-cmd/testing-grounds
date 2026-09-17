@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { PlatformKind } from "@/types/database";
 
 export type GamingProject = {
@@ -47,6 +48,19 @@ const filters: Filter[] = [
   "Indie",
 ];
 
+const filterKeys: Record<Filter, string> = {
+  Tutti: "filter.all",
+  Action: "filter.action",
+  RPG: "filter.rpg",
+  Adventure: "filter.adventure",
+  Platformer: "filter.platformer",
+  Horror: "filter.horror",
+  Strategy: "filter.strategy",
+  Simulation: "filter.simulation",
+  Puzzle: "filter.puzzle",
+  Indie: "filter.indie",
+};
+
 const filterAliases: Partial<Record<Filter, string[]>> = {
   RPG: ["rpg", "gdr", "role playing"],
   Adventure: ["adventure", "avventura"],
@@ -59,16 +73,16 @@ const filterAliases: Partial<Record<Filter, string[]>> = {
   Indie: ["indie"],
 };
 
-const platformLabels: Record<PlatformKind, string> = {
-  pc: "PC",
-  mobile: "Mobile",
-  webgl: "WebGL",
-  console: "Console",
-  web_saas: "Web / SaaS",
-  mobile_ios: "iOS",
-  mobile_android: "Android",
-  desktop: "Desktop",
-  browser_extension: "Browser extension",
+const platformKeys: Record<PlatformKind, string> = {
+  pc: "platform.pc",
+  mobile: "platform.mobile",
+  webgl: "platform.webgl",
+  console: "platform.console",
+  web_saas: "platform.webSaas",
+  mobile_ios: "platform.mobileIos",
+  mobile_android: "platform.mobileAndroid",
+  desktop: "platform.desktop",
+  browser_extension: "platform.browserExtension",
 };
 
 function projectMatchesFilter(project: GamingProject, filter: Filter) {
@@ -92,6 +106,7 @@ function ProjectCard({
   project: GamingProject;
   badge: Badge;
 }) {
+  const { t } = useLocale();
   return (
     <li>
       <Link
@@ -100,12 +115,12 @@ function ProjectCard({
       >
         <span className="absolute left-3 top-3 z-10 rounded-full bg-ink-950/85 px-2.5 py-1 text-xs font-semibold text-accent backdrop-blur">
           {badge === "Trending"
-            ? "🔥 Trending"
+            ? t("gaming.hub.badgeTrending")
             : badge === "Top Rated"
-              ? "★ Top Rated"
+              ? t("gaming.hub.badgeTopRated")
               : badge === "Novità"
-                ? "🆕 Novità"
-                : "★ Popolare"}
+                ? t("gaming.hub.badgeNew")
+                : t("gaming.hub.badgePopular")}
         </span>
         <div
           className="aspect-video bg-ink-700 bg-cover bg-center"
@@ -125,10 +140,10 @@ function ProjectCard({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-widest text-zinc-500">
-                {project.development_status?.replaceAll("_", " ") || "Indie game"}
+                {project.development_status?.replaceAll("_", " ") || t("gaming.hub.defaultStatus")}
               </p>
               <h3 className="mt-1 text-lg font-medium text-white group-hover:text-accent">
-                {project.title || "Gioco senza titolo"}
+                {project.title || t("gaming.hub.untitled")}
               </h3>
             </div>
             <ArrowRight className="h-5 w-5 shrink-0 text-zinc-500 group-hover:text-accent" />
@@ -136,7 +151,7 @@ function ProjectCard({
           <p className="line-clamp-2 text-sm text-zinc-400">
             {project.short_description ||
               project.description ||
-              "Nessuna descrizione disponibile."}
+              t("gaming.hub.noDescription")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {(project.platforms ?? []).map((platform) => (
@@ -144,7 +159,7 @@ function ProjectCard({
                 key={platform}
                 className="rounded-full bg-white/5 px-2.5 py-1 text-xs text-zinc-300"
               >
-                {platformLabels[platform] ?? platform}
+                {platformKeys[platform] ? t(platformKeys[platform]) : platform}
               </span>
             ))}
             {(project.tags ?? []).slice(0, 2).map((tag) => (
@@ -159,11 +174,11 @@ function ProjectCard({
           <div className="flex items-center gap-4 border-t border-white/10 pt-3 text-xs text-zinc-400">
             <span className="inline-flex items-center gap-1">
               <Download className="h-3.5 w-3.5" />
-              Dati della community
+              {t("gaming.hub.communityData")}
             </span>
             <span className="inline-flex items-center gap-1">
               <Star className="h-3.5 w-3.5 text-accent" />
-              Indie
+              {t("gaming.hub.indie")}
             </span>
           </div>
         </div>
@@ -175,6 +190,7 @@ function ProjectCard({
 type SortOrder = "newest" | "oldest";
 
 export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
+  const { t } = useLocale();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
@@ -187,7 +203,7 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
           const searchable = `${project.title ?? ""} ${
             project.description ?? ""
           } ${(project.tags ?? []).join(" ")} ${(project.platforms ?? [])
-            .map((platform) => platformLabels[platform] ?? platform)
+            .map((platform) => platform)
             .join(" ")}`.toLowerCase();
           return (
             (!normalizedQuery || searchable.includes(normalizedQuery)) &&
@@ -206,9 +222,7 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
 
   const empty = (
     <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
-      {filter === "Tutti"
-        ? "Nessun gioco presente nel catalogo."
-        : "Nessun gioco presente in questa categoria."}
+      {filter === "Tutti" ? t("gaming.hub.emptyAll") : t("gaming.hub.emptyFiltered")}
     </p>
   );
 
@@ -216,20 +230,19 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
     <div className="space-y-10">
       <header className="rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/15 via-ink-800 to-ink-900 p-6 shadow-panel sm:p-10">
         <p className="text-xs uppercase tracking-[0.2em] text-accent">
-          Indie gaming hub
+          {t("gaming.hub.tag")}
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-          Porta il tuo gioco davanti alla community.
+          {t("gaming.hub.title")}
         </h1>
         <p className="mt-3 max-w-2xl text-zinc-300">
-          Scopri nuovi videogiochi indie, partecipa ai playtest e aiuta gli
-          sviluppatori a trasformare le loro idee in esperienze memorabili.
+          {t("gaming.hub.subtitle")}
         </p>
         <Link
           href="/dashboard/projects/new?type=gaming"
           className="mt-6 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-dim"
         >
-          Pubblica il tuo Gioco
+          {t("gaming.hub.publish")}
         </Link>
       </header>
 
@@ -240,20 +253,20 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Cerca un gioco per titolo, tag o piattaforma..."
-              aria-label="Cerca un gioco"
+              placeholder={t("gaming.hub.searchPlaceholder")}
+              aria-label={t("gaming.hub.searchLabel")}
               className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50"
             />
           </div>
           <label className="flex items-center gap-2 text-xs text-zinc-400">
-            Ordina per
+            {t("gaming.hub.sortBy")}
             <select
               value={sortOrder}
               onChange={(event) => setSortOrder(event.target.value as SortOrder)}
               className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-accent/50"
             >
-              <option value="newest">Più recenti</option>
-              <option value="oldest">Meno recenti</option>
+              <option value="newest">{t("gaming.hub.sortNewest")}</option>
+              <option value="oldest">{t("gaming.hub.sortOldest")}</option>
             </select>
           </label>
         </div>
@@ -269,7 +282,7 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
                   : "bg-white/5 text-zinc-300 hover:bg-white/10"
               }`}
             >
-              {item}
+              {t(filterKeys[item])}
             </button>
           ))}
         </div>
@@ -278,10 +291,10 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
       <section className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-accent">
-            🎮 Catalogo giochi
+            {t("gaming.hub.catalogTag")}
           </p>
           <h2 className="mt-1 text-2xl font-semibold">
-            Tutti i giochi pubblicati
+            {t("gaming.hub.catalogTitle")}
           </h2>
         </div>
         {visible.length ? (

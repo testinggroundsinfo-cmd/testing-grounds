@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ShieldAlert, RefreshCw } from "lucide-react";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 declare global {
   interface Window {
@@ -46,6 +47,7 @@ function ensureAdsBaitScript() {
 }
 
 export function AdBlockDetector() {
+  const { t } = useLocale();
   const baitRef = useRef<HTMLDivElement>(null);
   const [blocked, setBlocked] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -108,16 +110,14 @@ export function AdBlockDetector() {
               <ShieldAlert className="h-6 w-6" />
             </div>
             <h1 id="adblock-title" className="text-2xl font-semibold tracking-tight text-white">
-              Un AdBlocker è attivo
+              {t("adblock.title")}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-              Testing-Grounds è gratuita per sviluppatori e tester. I banner
-              pubblicitari, discreti e non invasivi, coprono i costi di hosting
-              e permettono alla community indie di restare aperta a tutti.
+              {t("adblock.description")}
             </p>
             <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm text-zinc-200">
-              <li>Disattiva l&apos;estensione AdBlock su questo sito.</li>
-              <li>Ricarica la pagina per continuare a esplorare i playtest.</li>
+              <li>{t("adblock.step1")}</li>
+              <li>{t("adblock.step2")}</li>
             </ol>
             <button
               type="button"
@@ -128,7 +128,7 @@ export function AdBlockDetector() {
               className="mt-6 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-dim"
             >
               <RefreshCw className={`h-4 w-4 ${checking ? "animate-spin" : ""}`} />
-              Ho disattivato AdBlock
+              {t("adblock.confirm")}
             </button>
           </div>
         </div>

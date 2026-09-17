@@ -1,7 +1,8 @@
-import { notFound, redirect } from "next/navigation";
+﻿import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ApplicationsPanel, type ProjectApplicationRow } from "@/components/dashboard/ApplicationsPanel";
+import { T } from "@/components/i18n/T";
 
 export default async function DashboardProjectPage({
   params,
@@ -31,17 +32,17 @@ export default async function DashboardProjectPage({
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-widest text-accent">Gestione progetto</p>
-        <h1 className="text-2xl font-semibold">{project.title || "Progetto"}</h1>
+        <p className="text-xs uppercase tracking-widest text-accent"><T k="dashboard.projectManagement" /></p>
+        <h1 className="text-2xl font-semibold">{project.title || <T k="dashboard.projectTitleFallback" />}</h1>
         <div className="mt-2 flex flex-wrap gap-2 text-sm">
-          <Link href={`/dashboard/projects/${id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5">Modifica scheda</Link>
-          <Link href={`/dashboard/projects/${id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5">Release</Link>
-          <Link href={`/projects/${id}`} className="rounded-md border border-white/10 px-3 py-1.5">Visualizza pagina pubblica</Link>
+          <Link href={`/dashboard/projects/${id}/edit`} className="rounded-md border border-white/10 px-3 py-1.5"><T k="dashboard.editCard" /></Link>
+          <Link href={`/dashboard/projects/${id}/releases`} className="rounded-md border border-white/10 px-3 py-1.5"><T k="dashboard.releasesTitle" /></Link>
+          <Link href={`/projects/${id}`} className="rounded-md border border-white/10 px-3 py-1.5"><T k="dashboard.viewPublicPage" /></Link>
         </div>
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Candidature collaboratori</h2>
+        <h2 className="text-lg font-medium"><T k="dashboard.collaboratorApplications" /></h2>
         <ApplicationsPanel applications={(applications ?? []) as ProjectApplicationRow[]} />
       </section>
     </div>

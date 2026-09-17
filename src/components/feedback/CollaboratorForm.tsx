@@ -1,12 +1,14 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { requireBrowserUser } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import { FormAlert } from "@/components/ui/FormAlert";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function CollaboratorForm({ projectId }: { projectId: string }) {
+  const { t } = useLocale();
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"success" | "error" | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +23,7 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
     const cleanApplicationMessage = applicationMessage.trim();
     const cleanPortfolioUrl = portfolioUrl.trim();
     if (!cleanApplicationMessage && !cleanPortfolioUrl) {
-      setMessage("Compila almeno un campo prima di inviare.");
+      setMessage(t("feedback.collab.emptyFieldsError"));
       setStatus("error");
       setSubmitting(false);
       return;
@@ -60,11 +62,11 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
       }
       setApplicationMessage("");
       setPortfolioUrl("");
-      setMessage("Candidatura inviata, lo sviluppatore la riceverà in dashboard.");
+      setMessage(t("feedback.collab.success"));
       setStatus("success");
     } catch (error) {
       console.error("Submit Error:", error);
-      setMessage(error instanceof Error ? error.message : "Invio non riuscito.");
+      setMessage(error instanceof Error ? error.message : t("feedback.collab.failure"));
       setStatus("error");
     } finally {
       setSubmitting(false);
@@ -72,33 +74,33 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
   }
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-white/10 bg-ink-800 p-6">
-      <h2 className="text-lg font-medium">Candidati come collaboratore</h2>
+      <h2 className="text-lg font-medium">{t("feedback.collab.title")}</h2>
       <p className="text-sm text-zinc-400">
-        Il messaggio arriva allo sviluppatore nella dashboard riservata.
+        {t("feedback.collab.subtitle")}
       </p>
       <label className="block text-sm">
-        Ruolo
+        {t("feedback.collab.role")}
         <select name="role" className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2">
-          <option value="game_design">Game Design</option>
-          <option value="qa_tester">QA Tester</option>
-          <option value="translations">Traduzioni</option>
-          <option value="development">Sviluppo</option>
-          <option value="community">Community</option>
-          <option value="art">Art</option>
-          <option value="other">Altro</option>
+          <option value="game_design">{t("feedback.collab.roleGameDesign")}</option>
+          <option value="qa_tester">{t("feedback.collab.roleQaTester")}</option>
+          <option value="translations">{t("feedback.collab.roleTranslations")}</option>
+          <option value="development">{t("feedback.collab.roleDevelopment")}</option>
+          <option value="community">{t("feedback.collab.roleCommunity")}</option>
+          <option value="art">{t("feedback.collab.roleArt")}</option>
+          <option value="other">{t("feedback.collab.roleOther")}</option>
         </select>
       </label>
       <label className="block text-sm">
-        Messaggio
+        {t("feedback.collab.message")}
         <textarea name="message" value={applicationMessage} onChange={(event) => setApplicationMessage(event.target.value)} maxLength={2000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <label className="block text-sm">
-        Portfolio / link
+        {t("feedback.collab.portfolio")}
         <input name="portfolio_url" value={portfolioUrl} onChange={(event) => setPortfolioUrl(event.target.value)} type="url" className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <button disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        {submitting ? "Invio in corso..." : "Invia candidatura"}
+        {submitting ? t("feedback.collab.sending") : t("feedback.collab.submit")}
       </button>
       {message ? <FormAlert variant={status ?? "success"} message={message} /> : null}
     </form>

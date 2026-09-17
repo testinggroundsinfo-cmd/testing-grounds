@@ -1,20 +1,22 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Gamepad2, AppWindow, Puzzle } from "lucide-react";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 const items = [
-  { href: "/gaming", label: "Gaming", icon: Gamepad2 },
-  { href: "/software", label: "App & Software", icon: AppWindow },
-  { href: "/modding", label: "Modding", icon: Puzzle },
+  { href: "/gaming", key: "categorySwitch.gaming", icon: Gamepad2 },
+  { href: "/software", key: "categorySwitch.software", icon: AppWindow },
+  { href: "/modding", key: "categorySwitch.modding", icon: Puzzle },
 ] as const;
 
 export function CategorySwitch() {
   const pathname = usePathname();
+  const { t } = useLocale();
   return (
     <div className="flex rounded-full border border-white/10 bg-ink-800 p-1">
-      {items.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, key, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
@@ -25,7 +27,7 @@ export function CategorySwitch() {
             }`}
           >
             <Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">{label}</span>
+            <span className="hidden sm:inline">{t(key)}</span>
           </Link>
         );
       })}

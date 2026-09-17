@@ -1,21 +1,32 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { requireBrowserUser } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import { FormAlert } from "@/components/ui/FormAlert";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { ProjectCategory } from "@/types/database";
 
 export function ReviewForm({ category, projectId }: { category: ProjectCategory; projectId: string }) {
+  const { t } = useLocale();
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"success" | "error" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [comment, setComment] = useState("");
   const [scoreValues, setScoreValues] = useState<Record<string, string>>({});
   const fields = category === "gaming"
-    ? [["Gameplay", "gameplay"], ["Grafica", "graphics"], ["Bilanciamento", "balance"], ["Divertimento", "fun"]]
-    : [["Usabilità / UX", "usability"], ["Utilità", "usefulness"], ["Interfaccia / UI", "ui_quality"]];
+    ? [
+        [t("feedback.review.axisGameplay"), "gameplay"],
+        [t("feedback.review.axisGraphics"), "graphics"],
+        [t("feedback.review.axisBalance"), "balance"],
+        [t("feedback.review.axisFun"), "fun"],
+      ]
+    : [
+        [t("feedback.review.axisUsability"), "usability"],
+        [t("feedback.review.axisUsefulness"), "usefulness"],
+        [t("feedback.review.axisUiQuality"), "ui_quality"],
+      ];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,7 +43,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         }),
     );
     if (!cleanComment && !Object.values(scores).some((score) => score !== null)) {
-      setMessage("Compila almeno un campo prima di inviare.");
+      setMessage(t("feedback.review.emptyFieldsError"));
       setStatus("error");
       setSubmitting(false);
       return;
@@ -80,11 +91,11 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       }
       setComment("");
       setScoreValues({});
-      setMessage("Recensione pubblicata, grazie per il tuo feedback!");
+      setMessage(t("feedback.review.success"));
       setStatus("success");
     } catch (error) {
       console.error("Submit Error:", error);
-      setMessage(error instanceof Error ? error.message : "Pubblicazione non riuscita.");
+      setMessage(error instanceof Error ? error.message : t("feedback.review.failure"));
       setStatus("error");
     } finally {
       setSubmitting(false);
@@ -93,7 +104,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-white/10 bg-ink-800 p-6">
-      <h2 className="text-lg font-medium">Recensioni &amp; consigli</h2>
+      <h2 className="text-lg font-medium">{t("feedback.review.title")}</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         {fields.map(([axis, name]) => (
           <label key={axis} className="text-sm">
@@ -111,12 +122,12 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         ))}
       </div>
       <label className="block text-sm">
-        Suggerimenti e critiche costruttive
+        {t("feedback.review.comment")}
         <textarea name="comment" value={comment} onChange={(event) => setComment(event.target.value)} maxLength={4000} rows={5} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" />
       </label>
       <button disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        {submitting ? "Pubblicazione in corso..." : "Pubblica recensione"}
+        {submitting ? t("feedback.review.sending") : t("feedback.review.submit")}
       </button>
       {message ? <FormAlert variant={status ?? "success"} message={message} /> : null}
     </form>

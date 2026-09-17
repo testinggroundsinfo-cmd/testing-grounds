@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Loader2, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 type SearchProject = {
   id: string;
@@ -13,6 +14,7 @@ type SearchProject = {
 };
 
 export function GlobalProjectSearch() {
+  const { t } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchProject[]>([]);
@@ -61,7 +63,7 @@ export function GlobalProjectSearch() {
       const firstError = titleSearch.error ?? tagSearch.error ?? platformSearch.error;
       if (firstError) {
         setResults([]);
-        setError("Impossibile cercare i progetti. Riprova tra poco.");
+        setError(t("search.error"));
       } else {
         const merged = new Map<string, SearchProject>();
         for (const project of [
@@ -80,7 +82,7 @@ export function GlobalProjectSearch() {
       cancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [query]);
+  }, [query, t]);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -114,8 +116,8 @@ export function GlobalProjectSearch() {
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          placeholder="Cerca progetti..."
-          aria-label="Cerca progetti per titolo, tag o piattaforma"
+          placeholder={t("search.placeholder")}
+          aria-label={t("search.ariaLabel")}
           className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-sm text-white outline-none placeholder:text-zinc-500"
         />
         {query ? (
@@ -125,7 +127,7 @@ export function GlobalProjectSearch() {
               setQuery("");
               setOpen(false);
             }}
-            aria-label="Cancella ricerca"
+            aria-label={t("search.clear")}
             className="mr-2 rounded p-0.5 text-zinc-500 hover:text-white"
           >
             <X className="h-4 w-4" />
@@ -138,7 +140,7 @@ export function GlobalProjectSearch() {
           {loading ? (
             <div className="flex items-center gap-2 px-4 py-4 text-sm text-zinc-400">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Ricerca in corso...
+              {t("search.searching")}
             </div>
           ) : error ? (
             <p className="px-4 py-4 text-sm text-red-300">{error}</p>
@@ -179,7 +181,7 @@ export function GlobalProjectSearch() {
             </ul>
           ) : (
             <p className="px-4 py-4 text-sm text-zinc-400">
-              Nessun progetto trovato.
+              {t("search.noResults")}
             </p>
           )}
         </div>

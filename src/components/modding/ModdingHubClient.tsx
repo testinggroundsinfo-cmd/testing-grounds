@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Search, Sparkles } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { ModdingGame } from "@/data/modding-games";
 
 type Activity = { count: number; interactions: number; latest: string };
@@ -23,6 +24,7 @@ export function ModdingHubClient({
 }: {
   games: GameItem[];
 }) {
+  const { t } = useLocale();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
   const carouselRef = useRef<HTMLUListElement>(null);
@@ -65,10 +67,10 @@ export function ModdingHubClient({
         >
           <span className="absolute left-3 top-3 z-10 rounded-full bg-ink-950/85 px-2.5 py-1 text-xs font-semibold text-accent backdrop-blur">
             {badge === "Trending"
-              ? "🔥 Trending"
+              ? t("modding.hub.badgeTrending")
               : badge === "Nuovo"
-                ? "🆕 Nuovo"
-                : "★ Popolare"}
+                ? t("modding.hub.badgeNew")
+                : t("modding.hub.badgePopular")}
           </span>
           <img
             src={item.game.cover_url}
@@ -84,7 +86,7 @@ export function ModdingHubClient({
                 {item.game.name}
               </h3>
               <p className="mt-1 text-sm text-zinc-400">
-                {item.count} {item.count === 1 ? "mod" : "mod"}
+                {item.count} {t("modding.hub.modsCount")}
               </p>
             </div>
             <ArrowRight className="h-5 w-5 text-zinc-500 group-hover:text-accent" />
@@ -99,24 +101,24 @@ export function ModdingHubClient({
       <section className="relative overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/15 via-ink-800 to-ink-900 p-6 shadow-panel sm:p-10">
         <div className="relative z-10 max-w-2xl space-y-5">
           <p className="text-xs uppercase tracking-[0.2em] text-accent">
-            Community modding hub
+            {t("modding.hub.tag")}
           </p>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Dai nuova vita ai tuoi giochi.
+            {t("modding.hub.title")}
           </h1>
           <p className="text-zinc-300">
-            Esplora mod, total conversion e contenuti creati dalla community.
+            {t("modding.hub.subtitle")}
           </p>
           <Link
             href="/dashboard/projects/new?type=mod"
             className="inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-dim"
           >
-            Pubblica la tua Mod
+            {t("modding.hub.publishMod")}
           </Link>
           <div className="grid grid-cols-3 gap-3 border-t border-white/10 pt-5 text-sm">
-            <span><strong className="block text-lg text-white">50+</strong>Giochi supportati</span>
-            <span><strong className="block text-lg text-white">100%</strong>Gratis</span>
-            <span><strong className="block text-lg text-white">⚡</strong>Download veloci</span>
+            <span><strong className="block text-lg text-white">50+</strong>{t("modding.hub.statGames")}</span>
+            <span><strong className="block text-lg text-white">100%</strong>{t("modding.hub.statFree")}</span>
+            <span><strong className="block text-lg text-white">⚡</strong>{t("modding.hub.statFastDownloads")}</span>
           </div>
         </div>
         <Sparkles className="absolute -right-4 -top-5 h-48 w-48 text-accent/10" />
@@ -126,10 +128,10 @@ export function ModdingHubClient({
         <section className="relative overflow-hidden rounded-2xl border border-accent/30 bg-ink-800 p-6">
           <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{ backgroundImage: `url(${featured.game.cover_url})` }} />
           <div className="relative max-w-xl">
-            <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-ink-950">MOD DELLA SETTIMANA</span>
+            <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-ink-950">{t("modding.hub.weekly")}</span>
             <h2 className="mt-4 text-2xl font-semibold">{featured.game.name}</h2>
-            <p className="mt-2 text-sm text-zinc-300">La community sta creando contenuti incredibili per questo gioco.</p>
-            <Link href={`/modding/${featured.game.slug}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-dim">Scopri le mod <ArrowRight className="h-4 w-4" /></Link>
+            <p className="mt-2 text-sm text-zinc-300">{t("modding.hub.weeklyDescription")}</p>
+            <Link href={`/modding/${featured.game.slug}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-dim">{t("modding.hub.discoverMods")} <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </section>
       ) : null}
@@ -138,7 +140,7 @@ export function ModdingHubClient({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cerca un gioco..." aria-label="Cerca un gioco" className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("modding.hub.searchPlaceholder")} aria-label={t("modding.hub.searchLabel")} className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" />
           </div>
           <div className="flex flex-wrap gap-2">
             {filters.map((item) => (
@@ -152,17 +154,17 @@ export function ModdingHubClient({
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-widest text-accent">
-              {filter === "Tutti" ? "Tutti i giochi" : `Categoria: ${filter}`}
+              {filter === "Tutti" ? t("modding.allGames") : t("modding.hub.categoryLabel", { name: filter })}
             </p>
             <h2 className="mt-1 text-2xl font-semibold">
-              {filter === "Tutti" ? "Esplora il catalogo" : `Giochi ${filter}`}
+              {filter === "Tutti" ? t("modding.hub.exploreCatalog") : t("modding.hub.gamesOf", { name: filter })}
             </h2>
           </div>
           {filter === "Tutti" && filteredGames.length > 6 ? (
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                aria-label="Scorri giochi precedenti"
+                aria-label={t("modding.hub.prevGames")}
                 onClick={() => scrollCarousel(-1)}
                 className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent"
               >
@@ -170,7 +172,7 @@ export function ModdingHubClient({
               </button>
               <button
                 type="button"
-                aria-label="Scorri giochi successivi"
+                aria-label={t("modding.hub.nextGames")}
                 onClick={() => scrollCarousel(1)}
                 className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent"
               >
@@ -201,7 +203,7 @@ export function ModdingHubClient({
           </ul>
         ) : (
           <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
-            Nessun gioco corrisponde ai filtri.
+            {t("modding.hub.noMatch")}
           </p>
         )}
       </section>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -57,6 +57,10 @@ type CleanProjectPayload = {
   is_published: boolean;
 };
 
+// The second tuple value is the Italian label used for the auto-generated
+// searchable tag stored in the DB (kept stable across locales so catalog
+// filtering/search stays consistent). Displayed <option> labels are always
+// translated via the *Keys maps below with t().
 const publicationTypes: Record<FormCategory, readonly [PublicationType, string][]> = {
   gaming: [
     ["full_game", "Videogioco completo"],
@@ -76,6 +80,19 @@ const publicationTypes: Record<FormCategory, readonly [PublicationType, string][
   ],
 };
 
+const publicationTypeKeys: Record<PublicationType, string> = {
+  full_game: "publicationTypes.fullGame",
+  demo: "publicationTypes.demo",
+  asset_pack: "publicationTypes.assetPack",
+  mod: "publicationTypes.mod",
+  plugin: "publicationTypes.plugin",
+  preset: "publicationTypes.preset",
+  desktop_app: "publicationTypes.desktopApp",
+  web_app: "publicationTypes.webApp",
+  browser_extension: "publicationTypes.browserExtension",
+  tool: "publicationTypes.tool",
+};
+
 const platformsByCategory: Record<
   ProjectCategory,
   readonly [PlatformKind, string][]
@@ -93,6 +110,18 @@ const platformsByCategory: Record<
     ["desktop", "Desktop"],
     ["browser_extension", "Estensione browser"],
   ],
+};
+
+const platformKeys: Record<PlatformKind, string> = {
+  pc: "platform.pc",
+  mobile: "platform.mobile",
+  webgl: "platform.webgl",
+  console: "platform.console",
+  web_saas: "platform.webSaas",
+  mobile_ios: "platform.mobileIos",
+  mobile_android: "platform.mobileAndroid",
+  desktop: "platform.desktop",
+  browser_extension: "platform.browserExtension",
 };
 
 const gamingGenres = [
@@ -115,6 +144,14 @@ const developmentStatuses: readonly [DevelopmentStatus, string][] = [
   ["playtest", "Playtest"],
 ];
 
+const devStatusKeys: Record<DevelopmentStatus, string> = {
+  pre_alpha: "devStatus.preAlpha",
+  alpha: "devStatus.alpha",
+  closed_beta: "devStatus.closedBeta",
+  mvp: "devStatus.mvp",
+  playtest: "devStatus.playtest",
+};
+
 const distributionKinds: readonly [DistributionKind, string][] = [
   ["iframe", "Iframe"],
   ["direct_link", "Link diretto"],
@@ -126,6 +163,27 @@ const distributionKinds: readonly [DistributionKind, string][] = [
   ["itch", "itch.io"],
   ["zip", "ZIP"],
 ];
+
+const distributionKeys: Record<DistributionKind, string> = {
+  iframe: "distribution.iframe",
+  direct_link: "distribution.directLink",
+  testflight: "distribution.testflight",
+  play_beta: "distribution.playBeta",
+  steam_playtest: "distribution.steamPlaytest",
+  drive: "distribution.drive",
+  mega: "distribution.mega",
+  itch: "distribution.itch",
+  zip: "distribution.zip",
+};
+
+const modTypeKeys: Record<string, string> = {
+  content: "modType.content",
+  gameplay: "modType.gameplay",
+  visual: "modType.visual",
+  ui: "modType.ui",
+  utility: "modType.utility",
+  total_conversion: "modType.totalConversion",
+};
 
 function slugify(value: string) {
   return value
@@ -141,21 +199,8 @@ function optionalValue(form: FormData, name: string) {
   return value || null;
 }
 
-function getErrorMessage(error: unknown) {
-  if (error && typeof error === "object" && "message" in error) {
-    const message = error.message;
-    if (typeof message === "string" && message) return message;
-  }
-  if (error instanceof Error && error.message) return error.message;
-  try {
-    return JSON.stringify(error);
-  } catch {
-    return "Errore imprevisto durante il salvataggio.";
-  }
-}
-
 export default function NewProjectPage() {
-  const { locale } = useLocale();
+  const { t, locale } = useLocale();
   const router = useRouter();
   const [category, setCategory] = useState<FormCategory>("gaming");
   const [publicationType, setPublicationType] =
@@ -164,6 +209,20 @@ export default function NewProjectPage() {
   const [submitting, setSubmitting] = useState(false);
   const [alternativeLinks, setAlternativeLinks] = useState<AlternativeLink[]>([]);
   const [availableSlots, setAvailableSlots] = useState<number | null>(null);
+
+  function getErrorMessage(error: unknown) {
+    if (error && typeof error === "object" && "message" in error) {
+      const errorMessage = error.message;
+      if (typeof errorMessage === "string" && errorMessage) return errorMessage;
+    }
+    if (error instanceof Error && error.message) return error.message;
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return t("newProject.unexpectedError");
+    }
+  }
+
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("type") === "mod") {
       setPublicationType("mod");
@@ -228,9 +287,7 @@ export default function NewProjectPage() {
     );
 
     if (slug.length < 3) {
-      setMessage(
-        "Lo slug deve contenere almeno 3 caratteri alfanumerici o trattini.",
-      );
+      setMessage(t("newProject.slugTooShort"));
       setSubmitting(false);
       return;
     }
@@ -239,14 +296,14 @@ export default function NewProjectPage() {
       selectedDistribution &&
       !distributionKinds.some(([kind]) => kind === selectedDistribution)
     ) {
-      setMessage("Il tipo di distribuzione selezionato non è valido.");
+      setMessage(t("newProject.invalidDistribution"));
       setSubmitting(false);
       return;
     }
 
     const isModding = category === "modding";
     if (isModding && !selectedGame) {
-      setMessage("Seleziona il gioco di destinazione della mod.");
+      setMessage(t("newProject.selectTargetGame"));
       setSubmitting(false);
       return;
     }
@@ -255,7 +312,7 @@ export default function NewProjectPage() {
       (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type) ||
         coverFile.size > 5 * 1024 * 1024)
     ) {
-      setMessage("La cover deve essere JPG, PNG o WebP e non superare 5 MB.");
+      setMessage(t("newProject.coverRequirementsError"));
       setSubmitting(false);
       return;
     }
@@ -280,7 +337,7 @@ export default function NewProjectPage() {
         error: authError,
       } = await supabase.auth.getUser();
       if (authError) throw authError;
-      if (!user) throw new Error("Devi accedere per pubblicare un progetto.");
+      if (!user) throw new Error(t("newProject.mustLogin"));
       await ensureProfile(supabase, user);
 
       const { data: slotsData, error: slotsError } = await supabase.rpc(
@@ -291,9 +348,7 @@ export default function NewProjectPage() {
       if (typeof slotsData === "number") {
         setAvailableSlots(slotsData);
         if (slotsData <= 0) {
-          setMessage(
-            "Hai raggiunto il limite di progetti pubblicabili. Invia recensioni o segnalazioni approvate su progetti altrui (3 = +1 slot) per sbloccarne uno nuovo.",
-          );
+          setMessage(t("newProject.slotsExhausted"));
           return;
         }
       }
@@ -384,7 +439,7 @@ export default function NewProjectPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="text-2xl font-semibold">Nuova scheda</h1>
+      <h1 className="text-2xl font-semibold">{t("newProject.title")}</h1>
       {availableSlots !== null ? (
         <p
           className={`rounded-lg border px-3 py-2 text-sm ${
@@ -394,8 +449,8 @@ export default function NewProjectPage() {
           }`}
         >
           {availableSlots > 0
-            ? `Slot di pubblicazione disponibili: ${availableSlots}.`
-            : "Hai esaurito gli slot gratuiti. Ricevi +1 slot ogni 3 recensioni o bug report approvati su progetti altrui."}
+            ? t("newProject.slotsAvailable", { count: availableSlots })
+            : t("newProject.slotsExhausted")}
         </p>
       ) : null}
       <form
@@ -403,7 +458,7 @@ export default function NewProjectPage() {
         className="space-y-4 rounded-2xl border border-white/10 bg-ink-800 p-6"
       >
         <label className="block text-sm">
-          Categoria
+          {t("newProject.category")}
           <select
             value={category}
             onChange={(event) => {
@@ -413,14 +468,14 @@ export default function NewProjectPage() {
               }}
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           >
-            <option value="gaming">Gaming</option>
-            <option value="software">App &amp; Software</option>
-            <option value="modding">Modding</option>
+            <option value="gaming">{t("newProject.categoryGaming")}</option>
+            <option value="software">{t("newProject.categorySoftware")}</option>
+            <option value="modding">{t("newProject.categoryModding")}</option>
           </select>
         </label>
 
         <label className="block text-sm">
-          Tipo di pubblicazione
+          {t("newProject.publicationType")}
           <select
             name="publication_type"
             value={publicationType}
@@ -432,9 +487,9 @@ export default function NewProjectPage() {
             }
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           >
-            {publicationTypes[category].map(([value, label]) => (
+            {publicationTypes[category].map(([value]) => (
               <option key={value} value={value}>
-                {label}
+                {t(publicationTypeKeys[value])}
               </option>
             ))}
           </select>
@@ -442,9 +497,9 @@ export default function NewProjectPage() {
 
         {category === "modding" || publicationType === "mod" ? (
           <div className="space-y-4 rounded-xl border border-accent/20 bg-accent/5 p-4">
-            <p className="text-sm font-medium text-accent">Dettagli mod</p>
+            <p className="text-sm font-medium text-accent">{t("newProject.modDetails")}</p>
             <label className="block text-sm">
-              Gioco di destinazione
+              {t("newProject.targetGame")}
               <select
                 name="game_slug"
                 required
@@ -452,7 +507,7 @@ export default function NewProjectPage() {
                 className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
               >
                 <option value="" disabled>
-                  Seleziona un gioco
+                  {t("newProject.selectGame")}
                 </option>
                 {moddingGames.map((game) => (
                   <option key={game.slug} value={game.slug}>
@@ -463,7 +518,7 @@ export default function NewProjectPage() {
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm">
-                Versione mod
+                {t("newProject.modVersion")}
                 <input
                   name="mod_version"
                   required
@@ -473,7 +528,7 @@ export default function NewProjectPage() {
                 />
               </label>
               <label className="text-sm">
-                Compatibilità
+                {t("newProject.compatibility")}
                 <input
                   name="compatibility"
                   required
@@ -483,7 +538,7 @@ export default function NewProjectPage() {
                 />
               </label>
               <label className="text-sm">
-                Tipo di mod
+                {t("newProject.modType")}
                 <select
                   name="mod_type"
                   required
@@ -491,19 +546,18 @@ export default function NewProjectPage() {
                   className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
                 >
                   <option value="" disabled>
-                    Seleziona il tipo
+                    {t("newProject.selectType")}
                   </option>
-                  <option value="content">Contenuto / espansione</option>
-                  <option value="gameplay">Gameplay</option>
-                  <option value="visual">Grafica / shader</option>
-                  <option value="ui">Interfaccia</option>
-                  <option value="utility">Utility / quality of life</option>
-                  <option value="total_conversion">Total conversion</option>
+                  {Object.entries(modTypeKeys).map(([value, key]) => (
+                    <option key={value} value={value}>
+                      {t(key)}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
             <label className="block text-sm">
-              Dipendenze richieste <span className="text-zinc-500">(opzionale)</span>
+              {t("newProject.modDependencies")} <span className="text-zinc-500">({t("common.optional")})</span>
               <input
                 name="mod_dependencies"
                 maxLength={500}
@@ -511,11 +565,11 @@ export default function NewProjectPage() {
                 className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
               />
               <span className="mt-1 block text-xs text-zinc-500">
-                Indica loader, librerie o altre mod necessarie.
+                {t("newProject.modDependenciesHint")}
               </span>
             </label>
             <label className="block text-sm">
-              Link esterno / File download
+              {t("newProject.externalLink")}
               <input
                 name="mod_file_url"
                 type="url"
@@ -528,7 +582,7 @@ export default function NewProjectPage() {
         ) : null}
 
         <label className="block text-sm">
-          Titolo
+          {t("newProject.titleField")}
           <input
             name="title"
             required
@@ -539,7 +593,7 @@ export default function NewProjectPage() {
         </label>
 
         <label className="block text-sm">
-          Slug (opzionale)
+          {t("newProject.slugOptional")}
           <input
             name="slug"
             pattern="[a-z0-9-]{3,80}"
@@ -548,7 +602,7 @@ export default function NewProjectPage() {
         </label>
 
         <label className="block text-sm">
-          Descrizione breve
+          {t("newProject.shortDescription")}
           <input
             name="short_description"
             required
@@ -559,7 +613,7 @@ export default function NewProjectPage() {
         </label>
 
         <label className="block text-sm">
-          Descrizione
+          {t("newProject.description")}
           <textarea
             name="description"
             required
@@ -569,25 +623,25 @@ export default function NewProjectPage() {
         </label>
 
         <label className="block text-sm">
-          Stato di sviluppo
+          {t("newProject.devStatus")}
           <select
             name="status"
             defaultValue="alpha"
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
           >
-            {developmentStatuses.map(([value, label]) => (
+            {developmentStatuses.map(([value]) => (
               <option key={value} value={value}>
-                {label}
+                {t(devStatusKeys[value])}
               </option>
             ))}
           </select>
         </label>
 
         <fieldset className="space-y-2">
-          <legend className="text-sm">Piattaforme</legend>
+          <legend className="text-sm">{t("newProject.platforms")}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {platformsByCategory[category === "software" ? "software" : "gaming"].map(
-              ([value, label]) => (
+              ([value]) => (
               <label key={value} className="text-sm">
                 <input
                   type="checkbox"
@@ -595,7 +649,7 @@ export default function NewProjectPage() {
                   value={value}
                   className="mr-2"
                 />
-                {label}
+                {t(platformKeys[value])}
               </label>
               ),
             )}
@@ -604,13 +658,13 @@ export default function NewProjectPage() {
 
         {category !== "software" ? (
           <label className="block text-sm">
-            Genere
+            {t("newProject.genre")}
             <select
               name="genre"
               defaultValue=""
               className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
             >
-              <option value="">Nessuno</option>
+              <option value="">{t("common.none")}</option>
               {gamingGenres.map((genre) => (
                 <option key={genre} value={genre}>
                   {genre}
@@ -618,13 +672,13 @@ export default function NewProjectPage() {
               ))}
             </select>
             <span className="mt-1 block text-xs text-zinc-400">
-              Il genere viene salvato tra i tag e alimenta i filtri del catalogo.
+              {t("newProject.genreHint")}
             </span>
           </label>
         ) : null}
 
         <label className="block text-sm">
-          Tag (separati da virgola)
+          {t("newProject.tags")}
           <input
             name="tags"
             className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
@@ -633,7 +687,7 @@ export default function NewProjectPage() {
 
         {category !== "modding" && publicationType !== "mod" ? <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm">
-            Cover URL
+            {t("newProject.coverUrl")}
             <input
               name="cover_url"
               type="url"
@@ -641,7 +695,7 @@ export default function NewProjectPage() {
             />
           </label>
           <label className="text-sm">
-            YouTube URL
+            {t("newProject.youtubeUrl")}
             <input
               name="youtube_url"
               type="url"
@@ -649,7 +703,7 @@ export default function NewProjectPage() {
             />
           </label>
           <label className="text-sm">
-            Iframe URL
+            {t("newProject.iframeUrl")}
             <input
               name="iframe_url"
               type="url"
@@ -657,16 +711,16 @@ export default function NewProjectPage() {
             />
           </label>
           <label className="text-sm">
-            Tipo distribuzione
+            {t("newProject.distributionType")}
             <select
               name="distribution_type"
               defaultValue=""
               className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
             >
-              <option value="">Nessuno</option>
-              {distributionKinds.map(([value, label]) => (
+              <option value="">{t("common.none")}</option>
+              {distributionKinds.map(([value]) => (
                 <option key={value} value={value}>
-                  {label}
+                  {t(distributionKeys[value])}
                 </option>
               ))}
             </select>
@@ -674,7 +728,7 @@ export default function NewProjectPage() {
         </div> : null}
 
         {category !== "modding" && publicationType !== "mod" ? <label className="block text-sm">
-          Link distribuzione
+          {t("newProject.distributionLink")}
           <input
             name="distribution_link"
             type="url"
@@ -683,9 +737,9 @@ export default function NewProjectPage() {
         </label> : null}
 
         <fieldset className="space-y-3 rounded-xl border border-white/10 bg-ink-900/50 p-4">
-          <legend className="text-sm font-medium">Link Alternativi / Mirror</legend>
+          <legend className="text-sm font-medium">{t("newProject.mirrorsLegend")}</legend>
           <p className="text-xs text-zinc-400">
-            Aggiungi fonti alternative per il download o l&apos;accesso.
+            {t("newProject.mirrorsHint")}
           </p>
           {alternativeLinks.map((link, index) => (
             <div key={index} className="grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
@@ -699,7 +753,7 @@ export default function NewProjectPage() {
                   )
                 }
                 placeholder="Mirror MediaFire"
-                aria-label={`Etichetta mirror ${index + 1}`}
+                aria-label={t("projectEdit.mirrorLabelAria", { n: index + 1 })}
                 className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
               />
               <input
@@ -713,7 +767,7 @@ export default function NewProjectPage() {
                 }
                 type="url"
                 placeholder="https://..."
-                aria-label={`URL mirror ${index + 1}`}
+                aria-label={t("projectEdit.mirrorUrlAria", { n: index + 1 })}
                 className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
               />
               <button
@@ -723,21 +777,23 @@ export default function NewProjectPage() {
                 }
                 className="rounded-lg border border-red-400/30 px-3 py-2 text-sm text-red-300"
               >
-                Rimuovi
+                {t("newProject.removeMirror")}
               </button>
             </div>
           ))}
           <button
             type="button"
-            onClick={() => setAlternativeLinks((current) => [...current, { label: "", url: "" }])}
+            onClick={() =>
+              setAlternativeLinks((current) => [...current, { label: "", url: "" }])
+            }
             className="rounded-lg border border-white/10 px-3 py-2 text-sm"
           >
-            + Aggiungi mirror
+            {t("newProject.addMirror")}
           </button>
         </fieldset>
 
         <label className="block text-sm">
-          Immagine di copertina
+          {t("newProject.coverImage")}
           <input
             name="cover_file"
             type="file"
@@ -745,20 +801,20 @@ export default function NewProjectPage() {
             className="mt-1 block w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm"
           />
           <span className="mt-1 block text-xs text-zinc-400">
-            JPG, PNG o WebP. Massimo 5 MB.
+            {t("newProject.coverRequirements")}
           </span>
         </label>
 
         <label className="flex items-center gap-2 text-sm">
           <input name="is_published" type="checkbox" />
-          Pubblica subito
+          {t("newProject.publishNow")}
         </label>
 
         <button
           disabled={submitting || availableSlots === 0}
           className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50"
         >
-          {submitting ? "Salvataggio..." : "Salva scheda"}
+          {submitting ? t("newProject.saving") : t("newProject.saveCard")}
         </button>
         {message ? (
           <p role="alert" className="text-sm text-red-300">

@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
 import { FormAlert } from "@/components/ui/FormAlert";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 type Review = {
   id: string;
@@ -46,23 +47,22 @@ type Bug = {
   created_at: string;
 };
 
-const statusLabels: Record<string, string> = {
-  pending: "In attesa di approvazione",
-  approved: "Approvato",
-  rejected: "Rifiutato",
-};
-
-const statusStyles: Record<string, string> = {
-  pending: "bg-white/10 text-zinc-300",
-  approved: "bg-emerald-500/15 text-emerald-300",
-  rejected: "bg-red-500/15 text-red-300",
-};
-
 function StatusBadge({ status }: { status?: string | null }) {
+  const { t } = useLocale();
+  const statusStyles: Record<string, string> = {
+    pending: "bg-white/10 text-zinc-300",
+    approved: "bg-emerald-500/15 text-emerald-300",
+    rejected: "bg-red-500/15 text-red-300",
+  };
+  const statusLabels: Record<string, string> = {
+    pending: t("status.pendingApproval"),
+    approved: t("status.approved"),
+    rejected: t("status.rejected"),
+  };
   const value = status ?? "pending";
   return (
     <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusStyles[value] ?? statusStyles.pending}`}>
-      {statusLabels[value] ?? "In attesa"}
+      {statusLabels[value] ?? t("status.pending")}
     </span>
   );
 }
@@ -74,6 +74,7 @@ export function PublicFeedbackLists({
   projectId: string;
   projectOwnerId?: string;
 }) {
+  const { t } = useLocale();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,7 +129,7 @@ export function PublicFeedbackLists({
       if (updateError) throw updateError;
       setReviews((current) => current.map((r) => (r.id === id ? { ...r, status } : r)));
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Impossibile aggiornare la recensione.");
+      setError(updateError instanceof Error ? updateError.message : t("feedback.public.unableUpdateReview"));
     } finally {
       setBusyId(null);
     }
@@ -146,14 +147,14 @@ export function PublicFeedbackLists({
       if (updateError) throw updateError;
       setBugs((current) => current.map((b) => (b.id === id ? { ...b, status } : b)));
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Impossibile aggiornare la segnalazione.");
+      setError(updateError instanceof Error ? updateError.message : t("feedback.public.unableUpdateBug"));
     } finally {
       setBusyId(null);
     }
   }
 
   async function deleteReview(id: string) {
-    if (!window.confirm("Eliminare questa recensione?")) return;
+    if (!window.confirm(t("feedback.public.confirmDeleteReview"))) return;
     setBusyId(id);
     setError("");
     try {
@@ -162,14 +163,14 @@ export function PublicFeedbackLists({
       if (deleteError) throw deleteError;
       setReviews((current) => current.filter((r) => r.id !== id));
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Impossibile eliminare la recensione.");
+      setError(deleteError instanceof Error ? deleteError.message : t("feedback.public.unableDeleteReview"));
     } finally {
       setBusyId(null);
     }
   }
 
   async function deleteBug(id: string) {
-    if (!window.confirm("Eliminare questa segnalazione?")) return;
+    if (!window.confirm(t("feedback.public.confirmDeleteBug"))) return;
     setBusyId(id);
     setError("");
     try {
@@ -178,7 +179,7 @@ export function PublicFeedbackLists({
       if (deleteError) throw deleteError;
       setBugs((current) => current.filter((b) => b.id !== id));
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Impossibile eliminare la segnalazione.");
+      setError(deleteError instanceof Error ? deleteError.message : t("feedback.public.unableDeleteBug"));
     } finally {
       setBusyId(null);
     }
@@ -199,7 +200,7 @@ export function PublicFeedbackLists({
       );
       setEditingReviewId(null);
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Impossibile salvare le modifiche.");
+      setError(updateError instanceof Error ? updateError.message : t("feedback.public.unableSaveEdit"));
     } finally {
       setBusyId(null);
     }
@@ -212,7 +213,7 @@ export function PublicFeedbackLists({
     ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1)
     : null;
 
-  if (loading) return <p className="text-sm text-zinc-400">Caricamento feedback pubblici...</p>;
+  if (loading) return <p className="text-sm text-zinc-400">{t("feedback.public.loading")}</p>;
 
   return (
     <section className="space-y-4">
@@ -220,8 +221,8 @@ export function PublicFeedbackLists({
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold">Recensioni &amp; consigli</h2>
-            <span className="text-sm text-accent">{average ? `★ ${average}/5` : "Nessun voto"}</span>
+            <h2 className="text-xl font-semibold">{t("feedback.public.reviewsTitle")}</h2>
+            <span className="text-sm text-accent">{average ? `★ ${average}/5` : t("feedback.public.noRating")}</span>
           </div>
           <div className="mt-4 space-y-3">
             {reviews.map((review) => {
@@ -247,14 +248,14 @@ export function PublicFeedbackLists({
                           onClick={() => void saveReviewEdit(review.id)}
                           className="rounded-md border border-accent/40 px-3 py-1.5 text-xs text-accent disabled:opacity-50"
                         >
-                          Salva
+                          {t("feedback.public.save")}
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingReviewId(null)}
                           className="rounded-md border border-white/10 px-3 py-1.5 text-xs text-zinc-300"
                         >
-                          Annulla
+                          {t("feedback.public.cancel")}
                         </button>
                       </div>
                     </div>
@@ -271,7 +272,7 @@ export function PublicFeedbackLists({
                         }}
                         className="rounded-md border border-white/10 px-3 py-1.5 text-xs text-zinc-300"
                       >
-                        Modifica
+                        {t("feedback.public.edit")}
                       </button>
                       <button
                         type="button"
@@ -279,7 +280,7 @@ export function PublicFeedbackLists({
                         onClick={() => void deleteReview(review.id)}
                         className="rounded-md border border-red-400/30 px-3 py-1.5 text-xs text-red-300 disabled:opacity-50"
                       >
-                        Elimina
+                        {t("feedback.public.delete")}
                       </button>
                     </div>
                   ) : null}
@@ -291,7 +292,7 @@ export function PublicFeedbackLists({
                         onClick={() => void updateReviewStatus(review.id, "approved")}
                         className="rounded-md border border-emerald-400/30 px-3 py-1.5 text-xs text-emerald-300 disabled:opacity-40"
                       >
-                        Approva
+                        {t("feedback.public.approve")}
                       </button>
                       <button
                         type="button"
@@ -299,28 +300,28 @@ export function PublicFeedbackLists({
                         onClick={() => void updateReviewStatus(review.id, "rejected")}
                         className="rounded-md border border-red-400/30 px-3 py-1.5 text-xs text-red-300 disabled:opacity-40"
                       >
-                        Rifiuta
+                        {t("feedback.public.reject")}
                       </button>
                     </div>
                   ) : null}
                 </article>
               );
             })}
-            {!reviews.length ? <p className="text-sm text-zinc-400">Nessuna recensione pubblica.</p> : null}
+            {!reviews.length ? <p className="text-sm text-zinc-400">{t("feedback.public.noReviews")}</p> : null}
           </div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
-          <h2 className="text-xl font-semibold">Bug report della community</h2>
+          <h2 className="text-xl font-semibold">{t("feedback.public.bugsTitle")}</h2>
           <div className="mt-4 space-y-3">
             {bugs.map((bug) => {
               const isAuthor = Boolean(userId && bug.user_id === userId);
               return (
                 <article key={bug.id} className="rounded-lg border border-white/10 bg-ink-900 p-3">
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="font-medium">{bug.title || "Segnalazione senza titolo"}</h3>
+                    <h3 className="font-medium">{bug.title || t("feedback.public.untitledBug")}</h3>
                     <div className="flex items-center gap-2">
                       <span className="rounded-full bg-white/10 px-2 py-1 text-xs">
-                        {bug.bug_type?.replaceAll("_", " ") || "Segnalazione"}
+                        {bug.bug_type?.replaceAll("_", " ") || t("feedback.public.genericReport")}
                       </span>
                       {isAuthor || isOwner ? <StatusBadge status={bug.status} /> : null}
                     </div>
@@ -334,7 +335,7 @@ export function PublicFeedbackLists({
                         onClick={() => void deleteBug(bug.id)}
                         className="rounded-md border border-red-400/30 px-3 py-1.5 text-xs text-red-300 disabled:opacity-50"
                       >
-                        Elimina
+                        {t("feedback.public.delete")}
                       </button>
                     </div>
                   ) : null}
@@ -346,7 +347,7 @@ export function PublicFeedbackLists({
                         onClick={() => void updateBugStatus(bug.id, "approved")}
                         className="rounded-md border border-emerald-400/30 px-3 py-1.5 text-xs text-emerald-300 disabled:opacity-40"
                       >
-                        Approva
+                        {t("feedback.public.approve")}
                       </button>
                       <button
                         type="button"
@@ -354,14 +355,14 @@ export function PublicFeedbackLists({
                         onClick={() => void updateBugStatus(bug.id, "rejected")}
                         className="rounded-md border border-red-400/30 px-3 py-1.5 text-xs text-red-300 disabled:opacity-40"
                       >
-                        Rifiuta
+                        {t("feedback.public.reject")}
                       </button>
                     </div>
                   ) : null}
                 </article>
               );
             })}
-            {!bugs.length ? <p className="text-sm text-zinc-400">Nessun bug report pubblico.</p> : null}
+            {!bugs.length ? <p className="text-sm text-zinc-400">{t("feedback.public.noBugs")}</p> : null}
           </div>
         </div>
       </div>
