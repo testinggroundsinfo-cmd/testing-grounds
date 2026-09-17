@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Download, ExternalLink, Puzzle } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
-import { moddingGameBySlug } from "@/data/modding-games";
+import { MINECRAFT_FALLBACK_COVER, moddingGameBySlug } from "@/data/modding-games";
 import { createClient } from "@/lib/supabase/server";
 
 type ModdingGamePageProps = {
@@ -47,7 +47,7 @@ export default async function ModdingGamePage({
   const gameCover =
     game.cover_url ||
     (game.slug === "minecraft"
-      ? "https://www.minecraft.net/content/dam/games/minecraft/key-art/Java-Edition-Key-Art.jpg"
+      ? MINECRAFT_FALLBACK_COVER
       : "");
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Search, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ModdingGame } from "@/data/modding-games";
 
@@ -25,6 +25,7 @@ export function ModdingHubClient({
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
+  const [carouselPage, setCarouselPage] = useState(0);
   const normalizedQuery = query.trim().toLowerCase();
 
   const filteredGames = useMemo(
@@ -39,18 +40,13 @@ export function ModdingHubClient({
       }),
     [filter, games, normalizedQuery],
   );
-  const popular = [...filteredGames].sort(
-      (a, b) =>
-        b.count * 10 +
-        b.interactions -
-        (a.count * 10 + a.interactions),
-    )
-    .slice(0, 8);
-  const recent = [...filteredGames]
-    .filter(({ latest }) => latest)
-    .sort((a, b) => b.latest.localeCompare(a.latest))
-    .slice(0, 8);
-  const featured = popular[0] ?? filteredGames[0];
+  const carouselPageCount = Math.max(1, Math.ceil(filteredGames.length / 6));
+  const activeCarouselPage = Math.min(carouselPage, carouselPageCount - 1);
+  const carouselGames = filteredGames.slice(
+    activeCarouselPage * 6,
+    activeCarouselPage * 6 + 6,
+  );
+  const featured = filteredGames[0];
 
   function GameCard({
     item,
@@ -72,11 +68,10 @@ export function ModdingHubClient({
                 ? "🆕 Nuovo"
                 : "★ Popolare"}
           </span>
-          <div
-            className="aspect-[16/9] bg-cover bg-center"
-            style={{ backgroundImage: `url(${item.game.cover_url})` }}
-            role="img"
-            aria-label={`Cover di ${item.game.name}`}
+          <img
+            src={item.game.cover_url}
+            alt={`Cover di ${item.game.name}`}
+            className="aspect-video w-full object-cover"
           />
           <div className="flex items-center justify-between gap-3 p-5">
             <div>
@@ -145,20 +140,63 @@ export function ModdingHubClient({
           </div>
           <div className="flex flex-wrap gap-2">
             {filters.map((item) => (
-              <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3 py-1.5 text-xs transition ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{item}</button>
+              <button key={item} type="button" onClick={() => { setFilter(item); setCarouselPage(0); }} className={`rounded-full px-3 py-1.5 text-xs transition ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{item}</button>
             ))}
           </div>
         </div>
       </section>
 
       <section className="space-y-4">
-        <div><p className="text-xs uppercase tracking-widest text-accent">🔥 Più Popolari</p><h2 className="mt-1 text-2xl font-semibold">Le mod più seguite</h2></div>
-        {popular.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{popular.map((item, index) => <GameCard key={item.game.slug} item={item} badge={index < 3 ? "Trending" : "Popolare"} />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Nessun gioco corrisponde ai filtri.</p>}
-      </section>
-
-      <section className="space-y-4">
-        <div><p className="text-xs uppercase tracking-widest text-accent">🆕 Aggiunti di Recente</p><h2 className="mt-1 text-2xl font-semibold">Nuove uscite</h2></div>
-        {recent.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{recent.map((item) => <GameCard key={item.game.slug} item={item} badge="Nuovo" />)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">Le nuove mod appariranno qui appena pubblicate.</p>}
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-accent">
+              {filter === "Tutti" ? "Tutti i giochi" : `Categoria: ${filter}`}
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold">
+              {filter === "Tutti" ? "Esplora il catalogo" : `Giochi ${filter}`}
+            </h2>
+          </div>
+          {filter === "Tutti" && carouselPageCount > 1 ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Pagina precedente"
+                onClick={() => setCarouselPage((page) => Math.max(0, page - 1))}
+                disabled={activeCarouselPage === 0}
+                className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-xs text-zinc-400">
+                {activeCarouselPage + 1} / {carouselPageCount}
+              </span>
+              <button
+                type="button"
+                aria-label="Pagina successiva"
+                onClick={() => setCarouselPage((page) => Math.min(carouselPageCount - 1, page + 1))}
+                disabled={activeCarouselPage === carouselPageCount - 1}
+                className="rounded-lg border border-white/10 p-2 text-zinc-300 transition hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
+        </div>
+        {filteredGames.length ? (
+          <ul className={filter === "Tutti" ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" : "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4"}>
+            {(filter === "Tutti" ? carouselGames : filteredGames).map((item, index) => (
+              <GameCard
+                key={item.game.slug}
+                item={item}
+                badge={filter === "Tutti" && index < 3 ? "Trending" : "Popolare"}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">
+            Nessun gioco corrisponde ai filtri.
+          </p>
+        )}
       </section>
     </div>
   );

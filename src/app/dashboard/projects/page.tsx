@@ -45,7 +45,7 @@ export default function MyProjectsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
           <article key={project.id} className="overflow-hidden rounded-2xl border border-white/10 bg-ink-800">
-            {project.cover_url ? <img src={project.cover_url} alt="" className="h-40 w-full object-cover" /> : <div className="h-40 bg-ink-900" />}
+            {project.cover_url ? <img src={project.cover_url} alt="" className="aspect-video w-full object-cover" /> : <div className="aspect-video bg-ink-900" />}
             <div className="space-y-3 p-4">
               <div className="flex items-start justify-between gap-3"><h2 className="font-semibold">{project.title}</h2><span className={`rounded-full px-2 py-1 text-xs ${project.is_published ? "bg-accent/20 text-accent" : "bg-white/10 text-zinc-300"}`}>{project.is_published ? "Pubblicato" : "Bozza"}</span></div>
               <p className="line-clamp-2 text-sm text-zinc-400">{project.description}</p>

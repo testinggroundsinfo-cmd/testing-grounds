@@ -121,7 +121,7 @@ export default function ProjectEditForm({ project }: Props) {
         <button type="button" onClick={() => setAlternativeLinks((current) => [...current, { label: "", url: "" }])} className="rounded-lg border border-white/10 px-3 py-2 text-sm">+ Aggiungi mirror</button>
       </fieldset>
       <label className="block text-sm">Nuova immagine di copertina<input name="cover_file" type="file" accept="image/jpeg,image/png,image/webp" className="mt-1 block w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm" /></label>
-      {project.cover_url ? <img src={project.cover_url} alt="" className="h-32 w-full rounded-lg object-cover" /> : null}
+      {project.cover_url ? <img src={project.cover_url} alt="" className="aspect-video w-full rounded-lg object-cover" /> : null}
       <label className="flex items-center gap-2 text-sm"><input name="is_published" type="checkbox" defaultChecked={project.is_published} /> Pubblicato</label>
       <label className="flex items-center gap-2 text-sm">
         <input name="notify_new_bugs" type="checkbox" defaultChecked={project.notify_new_bugs ?? true} />

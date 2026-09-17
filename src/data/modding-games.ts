@@ -9,10 +9,12 @@ export type ModdingGame = {
 const steamCover = (appId: number) =>
   `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/library_600x900.jpg`;
 
+export const MINECRAFT_FALLBACK_COVER =
+  "https://www.minecraft.net/content/dam/games/minecraft/key-art/Java-Edition-Key-Art.jpg";
+
 const coverUrls: Record<string, string> = {
   // Minecraft is not distributed through Steam; use Mojang's official key art.
-  minecraft:
-    "https://www.minecraft.net/content/dam/games/minecraft/key-art/Java-Edition-Key-Art.jpg",
+  minecraft: MINECRAFT_FALLBACK_COVER,
   skyrim: steamCover(489830),
   "grand-theft-auto-v": steamCover(271590),
   "the-witcher-3": steamCover(292030),
