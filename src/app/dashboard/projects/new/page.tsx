@@ -449,7 +449,9 @@ export default function NewProjectPage() {
           }`}
         >
           {availableSlots > 0
-            ? t("newProject.slotsAvailable", { count: availableSlots })
+            ? t("newProject.slotsAvailable", {
+                count: availableSlots >= 2147483647 ? "∞" : availableSlots,
+              })
             : t("newProject.slotsExhausted")}
         </p>
       ) : null}

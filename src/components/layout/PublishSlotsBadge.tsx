@@ -50,7 +50,11 @@ export function PublishSlotsBadge({ user }: { user: User }) {
       ) : slots.status === "error" ? (
         <span className="text-zinc-500">{t("nav.publishSlotsError")}</span>
       ) : (
-        <span>{t("nav.publishSlots", { count: slots.count })}</span>
+        <span>
+          {t("nav.publishSlots", {
+            count: slots.count >= 2147483647 ? "∞" : slots.count,
+          })}
+        </span>
       )}
     </span>
   );
