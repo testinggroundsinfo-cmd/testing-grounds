@@ -8,7 +8,6 @@ import { GlobalProjectSearch } from "@/components/layout/GlobalProjectSearch";
 import { createClient } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
 
-const supabase = createClient();
 
 export function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
@@ -16,6 +15,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     let mounted = true;
+    const supabase = createClient();
 
     void supabase.auth.getUser().then(({ data }) => {
       if (mounted) setUser(data.user);
@@ -34,7 +34,7 @@ export function SiteHeader() {
   }, []);
 
   async function handleLogout() {
-    await supabase.auth.signOut();
+    await createClient().auth.signOut();
     setUser(null);
     setMobileMenuOpen(false);
   }

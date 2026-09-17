@@ -5,22 +5,39 @@ import { createClient } from "@/lib/supabaseClient";
 
 type Review = {
   id: string;
-  gameplay: number | null;
-  graphics: number | null;
-  balance: number | null;
-  fun: number | null;
-  usability: number | null;
-  usefulness: number | null;
-  ui_quality: number | null;
+  gameplay?: number | null;
+  graphics?: number | null;
+  balance?: number | null;
+  fun?: number | null;
+  usability?: number | null;
+  usefulness?: number | null;
+  ui_quality?: number | null;
+  rating?: number | null;
   comment: string | null;
   created_at: string;
 };
 
+function reviewScore(review: Review) {
+  const axes = [
+    review.gameplay,
+    review.graphics,
+    review.balance,
+    review.fun,
+    review.usability,
+    review.usefulness,
+    review.ui_quality,
+  ].filter((score): score is number => typeof score === "number");
+  if (axes.length) {
+    return axes.reduce((sum, score) => sum + score, 0) / axes.length;
+  }
+  return typeof review.rating === "number" ? review.rating : null;
+}
+
 type Bug = {
   id: string;
   title: string | null;
-  steps_to_reproduce: string | null;
-  status: string | null;
+  steps: string | null;
+  bug_type: string | null;
   created_at: string;
 };
 
@@ -34,13 +51,14 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
       const supabase = createClient();
       const [reviewsResult, bugsResult] = await Promise.all([
         supabase
-          .from("reviews")
-          .select("id, gameplay, graphics, balance, fun, usability, usefulness, ui_quality, comment, created_at")
+          .from("project_reviews")
+          // select("*") perche' gli assi software esistono solo dopo la migrazione 00012.
+          .select("*")
           .eq("project_id", projectId)
           .order("created_at", { ascending: false }),
         supabase
-          .from("bug_reports")
-          .select("id, title, steps_to_reproduce, status, created_at")
+          .from("project_bugs")
+          .select("id, title, steps, bug_type, created_at")
           .eq("project_id", projectId)
           .order("created_at", { ascending: false }),
       ]);
@@ -51,17 +69,9 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
     void load();
   }, [projectId]);
 
-  const scores = reviews.flatMap((review) =>
-    [
-      review.gameplay,
-      review.graphics,
-      review.balance,
-      review.fun,
-      review.usability,
-      review.usefulness,
-      review.ui_quality,
-    ].filter((score): score is number => typeof score === "number"),
-  );
+  const scores = reviews
+    .map(reviewScore)
+    .filter((score): score is number => score !== null);
   const average = scores.length
     ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1)
     : null;
@@ -78,7 +88,7 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
         <div className="mt-4 space-y-3">
           {reviews.map((review) => (
             <article key={review.id} className="rounded-lg border border-white/10 bg-ink-900 p-3">
-              <p className="text-amber-300">{"★".repeat(Math.round(scores.length ? Number(average) : 0))}</p>
+              <p className="text-amber-300">{"★".repeat(Math.round(reviewScore(review) ?? 0))}</p>
               {review.comment ? <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-300">{review.comment}</p> : null}
             </article>
           ))}
@@ -93,10 +103,10 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-medium">{bug.title || "Segnalazione senza titolo"}</h3>
                 <span className="rounded-full bg-white/10 px-2 py-1 text-xs">
-                  {bug.status === "fixed" ? "Risolto" : bug.status === "triaged" ? "In risoluzione" : "Aperto"}
+                  {bug.bug_type?.replaceAll("_", " ") || "Segnalazione"}
                 </span>
               </div>
-              {bug.steps_to_reproduce ? <p className="mt-2 line-clamp-3 text-sm text-zinc-400">{bug.steps_to_reproduce}</p> : null}
+              {bug.steps ? <p className="mt-2 line-clamp-3 text-sm text-zinc-400">{bug.steps}</p> : null}
             </article>
           ))}
           {!bugs.length ? <p className="text-sm text-zinc-400">Nessun bug report pubblico.</p> : null}

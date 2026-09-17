@@ -1,13 +1,14 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/keys";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
 
 export function createClient() {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY devono essere configurate.",
+  if (!browserClient) {
+    browserClient = createBrowserClient(
+      getSupabaseUrl(),
+      getSupabasePublishableKey(),
     );
   }
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  return browserClient;
 }

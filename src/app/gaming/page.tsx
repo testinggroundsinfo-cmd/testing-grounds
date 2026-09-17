@@ -15,7 +15,7 @@ export default async function GamingPage() {
         "id, title, short_description, description, category, project_type, platforms, tags, cover_url, created_at, development_status, is_published",
       )
       .eq("category", "gaming")
-      .eq("project_type", "project")
+      .or("project_type.eq.project,project_type.is.null")
       .eq("is_published", true)
       .order("created_at", { ascending: false });
 

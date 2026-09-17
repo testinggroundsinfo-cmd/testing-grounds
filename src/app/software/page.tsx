@@ -14,10 +14,10 @@ export default async function SoftwarePage() {
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "id, title, description, platforms, tags, cover_url, created_at, development_status",
+        "id, title, short_description, description, platforms, tags, cover_url, created_at, development_status",
       )
       .eq("category", "software")
-      .eq("project_type", "project")
+      .or("project_type.eq.project,project_type.is.null")
       .eq("is_published", true)
       .order("created_at", { ascending: false });
     if (!error && Array.isArray(data)) {

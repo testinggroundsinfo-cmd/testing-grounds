@@ -91,6 +91,18 @@ const platformsByCategory: Record<
   ],
 };
 
+const gamingGenres = [
+  "Action",
+  "RPG",
+  "Adventure",
+  "Platformer",
+  "Horror",
+  "Strategy",
+  "Simulation",
+  "Puzzle",
+  "Indie",
+] as const;
+
 const developmentStatuses: readonly [DevelopmentStatus, string][] = [
   ["pre_alpha", "Pre-alpha"],
   ["alpha", "Alpha"],
@@ -182,6 +194,12 @@ export default function NewProjectPage() {
         ),
       );
     const selectedDistribution = optionalValue(form, "distribution_type");
+    const rawGenre = optionalValue(form, "genre");
+    const selectedGenre =
+      submitCategory === "gaming" &&
+      gamingGenres.some((genre) => genre === rawGenre)
+        ? rawGenre
+        : null;
     const selectedGameSlug = optionalValue(form, "game_slug");
     const selectedGame = moddingGames.find(
       (game) => game.slug === selectedGameSlug,
@@ -253,20 +271,24 @@ export default function NewProjectPage() {
         description: `${shortPitch}\n\n${description}`.trim(),
         development_status: developmentStatus,
         platforms,
-        tags: [
-          ...String(form.get("tags") ?? "")
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
-          ...(publicationTypes[category]
-            .find(([type]) => type === publicationType)?.[1]
-            ? [
-                publicationTypes[category].find(
-                  ([type]) => type === publicationType,
-                )?.[1] as string,
-              ]
-            : []),
-        ],
+        tags: Array.from(
+          new Set([
+            ...(selectedGenre ? [selectedGenre] : []),
+            ...String(form.get("tags") ?? "")
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean),
+            ...(publicationTypes[category].find(
+              ([type]) => type === publicationType,
+            )?.[1]
+              ? [
+                  publicationTypes[category].find(
+                    ([type]) => type === publicationType,
+                  )?.[1] as string,
+                ]
+              : []),
+          ]),
+        ),
         cover_url: optionalValue(form, "cover_url"),
         youtube_url: optionalValue(form, "youtube_url"),
         iframe_url: optionalValue(form, "iframe_url"),
@@ -493,6 +515,27 @@ export default function NewProjectPage() {
             )}
           </div>
         </fieldset>
+
+        {category !== "software" ? (
+          <label className="block text-sm">
+            Genere
+            <select
+              name="genre"
+              defaultValue=""
+              className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2"
+            >
+              <option value="">Nessuno</option>
+              {gamingGenres.map((genre) => (
+                <option key={genre} value={genre}>
+                  {genre}
+                </option>
+              ))}
+            </select>
+            <span className="mt-1 block text-xs text-zinc-400">
+              Il genere viene salvato tra i tag e alimenta i filtri del catalogo.
+            </span>
+          </label>
+        ) : null}
 
         <label className="block text-sm">
           Tag (separati da virgola)
