@@ -5,16 +5,33 @@ import { createClient } from "@/lib/supabaseClient";
 
 type Review = {
   id: string;
-  gameplay: number | null;
-  graphics: number | null;
-  balance: number | null;
-  fun: number | null;
-  usability: number | null;
-  usefulness: number | null;
-  ui_quality: number | null;
+  gameplay?: number | null;
+  graphics?: number | null;
+  balance?: number | null;
+  fun?: number | null;
+  usability?: number | null;
+  usefulness?: number | null;
+  ui_quality?: number | null;
+  rating?: number | null;
   comment: string | null;
   created_at: string;
 };
+
+function reviewScore(review: Review) {
+  const axes = [
+    review.gameplay,
+    review.graphics,
+    review.balance,
+    review.fun,
+    review.usability,
+    review.usefulness,
+    review.ui_quality,
+  ].filter((score): score is number => typeof score === "number");
+  if (axes.length) {
+    return axes.reduce((sum, score) => sum + score, 0) / axes.length;
+  }
+  return typeof review.rating === "number" ? review.rating : null;
+}
 
 type Bug = {
   id: string;
@@ -52,17 +69,9 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
     void load();
   }, [projectId]);
 
-  const scores = reviews.flatMap((review) =>
-    [
-      review.gameplay,
-      review.graphics,
-      review.balance,
-      review.fun,
-      review.usability,
-      review.usefulness,
-      review.ui_quality,
-    ].filter((score): score is number => typeof score === "number"),
-  );
+  const scores = reviews
+    .map(reviewScore)
+    .filter((score): score is number => score !== null);
   const average = scores.length
     ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1)
     : null;
@@ -79,7 +88,7 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
         <div className="mt-4 space-y-3">
           {reviews.map((review) => (
             <article key={review.id} className="rounded-lg border border-white/10 bg-ink-900 p-3">
-              <p className="text-amber-300">{"★".repeat(Math.round(scores.length ? Number(average) : 0))}</p>
+              <p className="text-amber-300">{"★".repeat(Math.round(reviewScore(review) ?? 0))}</p>
               {review.comment ? <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-300">{review.comment}</p> : null}
             </article>
           ))}
