@@ -35,7 +35,8 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
       const [reviewsResult, bugsResult] = await Promise.all([
         supabase
           .from("project_reviews")
-          .select("id, gameplay, graphics, balance, fun, usability, usefulness, ui_quality, comment, created_at")
+          // select("*") perche' gli assi software esistono solo dopo la migrazione 00012.
+          .select("*")
           .eq("project_id", projectId)
           .order("created_at", { ascending: false }),
         supabase

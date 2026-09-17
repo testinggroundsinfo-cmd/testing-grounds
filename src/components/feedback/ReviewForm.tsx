@@ -39,6 +39,11 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       const filledScores = Object.values(scores).filter(
         (score): score is number => typeof score === "number",
       );
+      const softwareScores = {
+        usability: scores.usability ?? null,
+        usefulness: scores.usefulness ?? null,
+        ui_quality: scores.ui_quality ?? null,
+      };
       const cleanPayload = {
         project_id: projectId,
         user_id: user?.id ?? null,
@@ -46,15 +51,25 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         graphics: scores.graphics ?? null,
         balance: scores.balance ?? null,
         fun: scores.fun ?? null,
-        usability: scores.usability ?? null,
-        usefulness: scores.usefulness ?? null,
-        ui_quality: scores.ui_quality ?? null,
         rating: filledScores.length
           ? Math.round(filledScores.reduce((sum, score) => sum + score, 0) / filledScores.length)
           : null,
         comment: cleanComment || null,
       };
-      const { error } = await supabase.from("project_reviews").insert(cleanPayload);
+      let { error } = await supabase
+        .from("project_reviews")
+        .insert({ ...cleanPayload, ...softwareScores });
+      if (error?.code === "PGRST204") {
+        // Database senza la migrazione 00012: i punteggi software finiscono nel commento.
+        const summary = fields
+          .filter(([, key]) => key in softwareScores && scores[key] !== null)
+          .map(([axis, key]) => `${axis}: ${scores[key]}/5`)
+          .join(" · ");
+        ({ error } = await supabase.from("project_reviews").insert({
+          ...cleanPayload,
+          comment: [cleanPayload.comment, summary].filter(Boolean).join("\n\n") || null,
+        }));
+      }
       if (error) {
         console.error("Errore Supabase:", error);
         throw error;

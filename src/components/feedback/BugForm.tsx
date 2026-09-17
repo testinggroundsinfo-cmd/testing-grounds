@@ -47,8 +47,11 @@ export function BugForm({
         os: isGame ? optionalText("os_name") : null,
         gpu: isGame ? optionalText("gpu_name") : null,
         ram: isGame ? optionalNumber("ram_gb") : null,
-        device: isGame ? null : optionalText("device_name"),
-        browser: isGame ? null : optionalText("browser_name"),
+        device: isGame
+          ? null
+          : [optionalText("device_name"), optionalText("browser_name")]
+              .filter(Boolean)
+              .join(" / ") || null,
         steps: cleanReproductionSteps || null,
         user_id: user?.id ?? null,
       };

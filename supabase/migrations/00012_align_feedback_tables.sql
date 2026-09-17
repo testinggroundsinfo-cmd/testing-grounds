@@ -1,15 +1,11 @@
--- Allinea le tabelle di feedback ai payload inviati dai form pubblici.
--- I form software inviano usability/usefulness/ui_quality e il bug report
--- software invia device/browser: senza queste colonne PostgREST risponde
--- PGRST204 e l'invio fallisce con "Invio non riuscito".
+-- Allinea project_reviews ai punteggi inviati dal form recensioni software.
+-- Senza queste colonne PostgREST risponde PGRST204 e il client ripiega
+-- salvando i punteggi nel commento.
 
 alter table public.project_reviews
   add column if not exists usability smallint,
   add column if not exists usefulness smallint,
   add column if not exists ui_quality smallint;
-
-alter table public.project_bugs
-  add column if not exists browser text;
 
 -- I punteggi restano opzionali: una recensione puo' contenere solo il commento.
 alter table public.project_reviews
