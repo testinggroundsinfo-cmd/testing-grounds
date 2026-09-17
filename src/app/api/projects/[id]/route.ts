@@ -99,7 +99,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
 
   const { data: project, error: projectError } = await supabase
     .from("projects")
-    .select("id, slug")
+    .select("id, slug, game_slug")
     .eq("id", id)
     .eq("owner_id", user.id)
     .maybeSingle();
@@ -111,26 +111,38 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Progetto non trovato." }, { status: 404 });
   }
 
-  const { error: deleteError } = await supabase
+  const { data: deleted, error: deleteError } = await supabase
     .from("projects")
     .delete()
     .eq("id", project.id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .select("id");
 
   if (deleteError) {
     console.error("Errore eliminazione:", deleteError);
     return NextResponse.json({ error: deleteError.message }, { status: 400 });
   }
 
+  if (!deleted?.length) {
+    return NextResponse.json(
+      { error: "Eliminazione non consentita per questo progetto." },
+      { status: 403 },
+    );
+  }
+
   revalidatePath("/");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
-  revalidatePath("/projects/[id]");
+  revalidatePath("/dashboard/projects");
+  revalidatePath("/projects/[id]", "page");
   revalidatePath(`/projects/${project.id}`);
   revalidatePath(`/projects/${project.slug}`);
   revalidatePath("/gaming");
   revalidatePath("/software");
   revalidatePath("/modding");
+  if (project.game_slug) {
+    revalidatePath(`/modding/${project.game_slug}`);
+  }
 
   return NextResponse.json({ deleted: true });
 }

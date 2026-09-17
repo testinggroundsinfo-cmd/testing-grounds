@@ -27,12 +27,12 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
       if (user) await ensureProfile(supabase, user);
       const cleanPayload = {
         project_id: projectId,
-        applicant_id: user?.id ?? null,
-        role: String(form.get("role") || "other") as never,
-        message: cleanApplicationMessage,
+        user_id: user?.id ?? null,
+        role: String(form.get("role") || "other").trim() || "other",
+        message: cleanApplicationMessage || null,
         portfolio_url: cleanPortfolioUrl || null,
       };
-      const { error } = await supabase.from("collaborator_applications").insert(cleanPayload);
+      const { error } = await supabase.from("project_applications").insert(cleanPayload);
       if (error) {
         console.error("Errore Supabase:", error);
         throw error;
@@ -47,7 +47,7 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
             role: cleanPayload.role,
             message: cleanPayload.message,
             portfolio_url: cleanPayload.portfolio_url,
-            applicant_id: cleanPayload.applicant_id,
+            applicant_id: cleanPayload.user_id,
           }),
         },
       );

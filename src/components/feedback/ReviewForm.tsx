@@ -23,7 +23,8 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       fields
         .map(([, key]) => {
           const value = (scoreValues[key] ?? "").trim();
-          return [key, value ? Number(value) : null];
+          const score = value ? Number(value) : null;
+          return [key, score !== null && Number.isFinite(score) ? score : null];
         }),
     );
     if (!cleanComment && !Object.values(scores).some((score) => score !== null)) {
@@ -35,9 +36,12 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) await ensureProfile(supabase, user);
+      const filledScores = Object.values(scores).filter(
+        (score): score is number => typeof score === "number",
+      );
       const cleanPayload = {
         project_id: projectId,
-        author_id: user?.id ?? null,
+        user_id: user?.id ?? null,
         gameplay: scores.gameplay ?? null,
         graphics: scores.graphics ?? null,
         balance: scores.balance ?? null,
@@ -45,9 +49,12 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
         usability: scores.usability ?? null,
         usefulness: scores.usefulness ?? null,
         ui_quality: scores.ui_quality ?? null,
+        rating: filledScores.length
+          ? Math.round(filledScores.reduce((sum, score) => sum + score, 0) / filledScores.length)
+          : null,
         comment: cleanComment || null,
       };
-      const { error } = await supabase.from("reviews").insert(cleanPayload);
+      const { error } = await supabase.from("project_reviews").insert(cleanPayload);
       if (error) {
         console.error("Errore Supabase:", error);
         throw error;

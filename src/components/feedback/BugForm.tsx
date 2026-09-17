@@ -22,6 +22,13 @@ export function BugForm({
     setSubmitting(true);
     setMessage("");
     const form = new FormData(event.currentTarget);
+    const optionalText = (name: string) => String(form.get(name) ?? "").trim() || null;
+    const optionalNumber = (name: string) => {
+      const value = String(form.get(name) ?? "").trim();
+      if (!value) return null;
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
     const cleanBugTitle = bugTitle.trim();
     const cleanReproductionSteps = reproductionSteps.trim();
     if (!cleanBugTitle && !cleanReproductionSteps) {
@@ -35,13 +42,15 @@ export function BugForm({
       const cleanPayload = {
         project_id: projectId,
         title: cleanBugTitle || null,
-        bug_type: String(form.get("kind") || "").trim() || null,
-        fps: form.get("avg_fps") ? Number(form.get("avg_fps")) : null,
-        os: String(form.get("os_name") ?? "").trim() || null,
-        gpu: String(form.get("gpu_name") ?? "").trim() || null,
-        ram: form.get("ram_gb") ? Number(form.get("ram_gb")) : null,
+        bug_type: optionalText("kind"),
+        fps: isGame ? optionalNumber("avg_fps") : null,
+        os: isGame ? optionalText("os_name") : null,
+        gpu: isGame ? optionalText("gpu_name") : null,
+        ram: isGame ? optionalNumber("ram_gb") : null,
+        device: isGame ? null : optionalText("device_name"),
+        browser: isGame ? null : optionalText("browser_name"),
         steps: cleanReproductionSteps || null,
-        user_id: user?.id || null,
+        user_id: user?.id ?? null,
       };
       const { error } = await supabase.from("project_bugs").insert(cleanPayload);
       if (error) {

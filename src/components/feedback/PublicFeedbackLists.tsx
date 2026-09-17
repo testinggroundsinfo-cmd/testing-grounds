@@ -19,8 +19,8 @@ type Review = {
 type Bug = {
   id: string;
   title: string | null;
-  steps_to_reproduce: string | null;
-  status: string | null;
+  steps: string | null;
+  bug_type: string | null;
   created_at: string;
 };
 
@@ -34,13 +34,13 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
       const supabase = createClient();
       const [reviewsResult, bugsResult] = await Promise.all([
         supabase
-          .from("reviews")
+          .from("project_reviews")
           .select("id, gameplay, graphics, balance, fun, usability, usefulness, ui_quality, comment, created_at")
           .eq("project_id", projectId)
           .order("created_at", { ascending: false }),
         supabase
-          .from("bug_reports")
-          .select("id, title, steps_to_reproduce, status, created_at")
+          .from("project_bugs")
+          .select("id, title, steps, bug_type, created_at")
           .eq("project_id", projectId)
           .order("created_at", { ascending: false }),
       ]);
@@ -93,10 +93,10 @@ export function PublicFeedbackLists({ projectId }: { projectId: string }) {
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-medium">{bug.title || "Segnalazione senza titolo"}</h3>
                 <span className="rounded-full bg-white/10 px-2 py-1 text-xs">
-                  {bug.status === "fixed" ? "Risolto" : bug.status === "triaged" ? "In risoluzione" : "Aperto"}
+                  {bug.bug_type?.replaceAll("_", " ") || "Segnalazione"}
                 </span>
               </div>
-              {bug.steps_to_reproduce ? <p className="mt-2 line-clamp-3 text-sm text-zinc-400">{bug.steps_to_reproduce}</p> : null}
+              {bug.steps ? <p className="mt-2 line-clamp-3 text-sm text-zinc-400">{bug.steps}</p> : null}
             </article>
           ))}
           {!bugs.length ? <p className="text-sm text-zinc-400">Nessun bug report pubblico.</p> : null}

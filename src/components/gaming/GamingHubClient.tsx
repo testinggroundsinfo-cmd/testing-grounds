@@ -25,9 +25,12 @@ type Filter =
   | "Tutti"
   | "Action"
   | "RPG"
+  | "Adventure"
   | "Platformer"
   | "Horror"
   | "Strategy"
+  | "Simulation"
+  | "Puzzle"
   | "Indie";
 type Badge = "Trending" | "Popolare" | "Top Rated" | "Novità";
 
@@ -35,11 +38,26 @@ const filters: Filter[] = [
   "Tutti",
   "Action",
   "RPG",
+  "Adventure",
   "Platformer",
   "Horror",
   "Strategy",
+  "Simulation",
+  "Puzzle",
   "Indie",
 ];
+
+const filterAliases: Partial<Record<Filter, string[]>> = {
+  RPG: ["rpg", "gdr", "role playing"],
+  Adventure: ["adventure", "avventura"],
+  Platformer: ["platformer", "platform"],
+  Horror: ["horror", "survival horror"],
+  Strategy: ["strategy", "strategia", "rts", "tattico"],
+  Simulation: ["simulation", "simulatore", "simulazione", "sim"],
+  Puzzle: ["puzzle", "rompicapo"],
+  Action: ["action", "azione"],
+  Indie: ["indie"],
+};
 
 const platformLabels: Record<PlatformKind, string> = {
   pc: "PC",
@@ -58,12 +76,13 @@ function projectMatchesFilter(project: GamingProject, filter: Filter) {
     return true;
   }
 
-  const normalizedFilter = filter.toLowerCase();
-  return [project.category, ...(project.tags ?? [])]
+  const keywords = filterAliases[filter] ?? [filter.toLowerCase()];
+  return (project.tags ?? [])
     .filter((value): value is string => typeof value === "string")
-    .some((value) =>
-      value.toLowerCase().replace(/[-_]/g, " ").includes(normalizedFilter),
-    );
+    .some((value) => {
+      const normalizedTag = value.toLowerCase().replace(/[-_]/g, " ");
+      return keywords.some((keyword) => normalizedTag.includes(keyword));
+    });
 }
 
 function ProjectCard({
