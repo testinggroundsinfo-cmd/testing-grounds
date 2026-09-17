@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ensureProfile } from "@/lib/auth/ensure-profile";
+import { requireBrowserUser } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import { FormAlert } from "@/components/ui/FormAlert";
 import type { ProjectCategory } from "@/types/database";
@@ -39,8 +39,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
     }
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) await ensureProfile(supabase, user);
+      const user = await requireBrowserUser(supabase);
       const filledScores = Object.values(scores).filter(
         (score): score is number => typeof score === "number",
       );
@@ -51,7 +50,7 @@ export function ReviewForm({ category, projectId }: { category: ProjectCategory;
       };
       const cleanPayload = {
         project_id: projectId,
-        user_id: user?.id ?? null,
+        user_id: user.id,
         gameplay: scores.gameplay ?? null,
         graphics: scores.graphics ?? null,
         balance: scores.balance ?? null,

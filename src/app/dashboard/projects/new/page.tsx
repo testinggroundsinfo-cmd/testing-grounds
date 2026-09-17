@@ -158,11 +158,28 @@ export default function NewProjectPage() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [alternativeLinks, setAlternativeLinks] = useState<AlternativeLink[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<number | null>(null);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("type") === "mod") {
       setPublicationType("mod");
       setCategory("modding");
     }
+  }, []);
+
+  useEffect(() => {
+    async function loadSlots() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setAvailableSlots(0);
+        return;
+      }
+      const { data, error } = await supabase.rpc("available_publish_slots", {
+        target_user: user.id,
+      });
+      if (!error && typeof data === "number") setAvailableSlots(data);
+    }
+    void loadSlots();
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -261,6 +278,21 @@ export default function NewProjectPage() {
       if (!user) throw new Error("Devi accedere per pubblicare un progetto.");
       await ensureProfile(supabase, user);
 
+      const { data: slotsData, error: slotsError } = await supabase.rpc(
+        "available_publish_slots",
+        { target_user: user.id },
+      );
+      if (slotsError) throw slotsError;
+      if (typeof slotsData === "number") {
+        setAvailableSlots(slotsData);
+        if (slotsData <= 0) {
+          setMessage(
+            "Hai raggiunto il limite di progetti pubblicabili. Invia recensioni o segnalazioni approvate su progetti altrui (3 = +1 slot) per sbloccarne uno nuovo.",
+          );
+          return;
+        }
+      }
+
       const cleanData: CleanProjectPayload = {
         owner_id: user.id,
         title,
@@ -343,6 +375,19 @@ export default function NewProjectPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="text-2xl font-semibold">Nuova scheda</h1>
+      {availableSlots !== null ? (
+        <p
+          className={`rounded-lg border px-3 py-2 text-sm ${
+            availableSlots > 0
+              ? "border-accent/30 bg-accent/10 text-accent"
+              : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+          }`}
+        >
+          {availableSlots > 0
+            ? `Slot di pubblicazione disponibili: ${availableSlots}.`
+            : "Hai esaurito gli slot gratuiti. Ricevi +1 slot ogni 3 recensioni o bug report approvati su progetti altrui."}
+        </p>
+      ) : null}
       <form
         onSubmit={handleSubmit}
         className="space-y-4 rounded-2xl border border-white/10 bg-ink-800 p-6"
@@ -669,7 +714,7 @@ export default function NewProjectPage() {
         </label>
 
         <button
-          disabled={submitting}
+          disabled={submitting || availableSlots === 0}
           className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50"
         >
           {submitting ? "Salvataggio..." : "Salva scheda"}

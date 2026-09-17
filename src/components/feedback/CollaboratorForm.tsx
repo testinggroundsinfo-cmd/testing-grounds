@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ensureProfile } from "@/lib/auth/ensure-profile";
+import { requireBrowserUser } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import { FormAlert } from "@/components/ui/FormAlert";
 
@@ -28,11 +28,10 @@ export function CollaboratorForm({ projectId }: { projectId: string }) {
     }
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) await ensureProfile(supabase, user);
+      const user = await requireBrowserUser(supabase);
       const cleanPayload = {
         project_id: projectId,
-        user_id: user?.id ?? null,
+        user_id: user.id,
         role: String(form.get("role") || "other").trim() || "other",
         message: cleanApplicationMessage || null,
         portfolio_url: cleanPortfolioUrl || null,

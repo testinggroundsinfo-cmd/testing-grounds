@@ -14,6 +14,7 @@ type ProjectPageProps = {
 
 type Project = {
   id: string;
+  owner_id: string;
   category: "gaming" | "software";
   title: string;
   short_description: string | null;
@@ -92,7 +93,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url, alternative_links",
+      "id, owner_id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url, alternative_links",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -242,7 +243,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           projectId={project.id}
           category={project.category}
         />
-        <PublicFeedbackLists projectId={project.id} />
+        <PublicFeedbackLists projectId={project.id} projectOwnerId={project.owner_id} />
       </article>
     </AppShell>
   );

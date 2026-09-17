@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
+import { requireBrowserUser } from "@/lib/auth/ensure-profile";
 import { FormAlert } from "@/components/ui/FormAlert";
 import type { ProjectCategory } from "@/types/database";
 
@@ -43,7 +44,7 @@ export function BugForm({
     }
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await requireBrowserUser(supabase);
       const cleanPayload = {
         project_id: projectId,
         title: cleanBugTitle || null,
@@ -58,7 +59,7 @@ export function BugForm({
               .filter(Boolean)
               .join(" / ") || null,
         steps: cleanReproductionSteps || null,
-        user_id: user?.id ?? null,
+        user_id: user.id,
       };
       const { error } = await supabase.from("project_bugs").insert(cleanPayload);
       if (error) {
