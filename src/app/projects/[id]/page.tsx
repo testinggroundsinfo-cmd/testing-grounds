@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProjectTabs } from "@/components/project/ProjectTabs";
 import { PublicFeedbackLists } from "@/components/feedback/PublicFeedbackLists";
+import { ProjectTranslation } from "@/components/project/ProjectTranslation";
 import { createClient } from "@/lib/supabase/server";
 import type { DistributionKind } from "@/types/database";
 import type { AlternativeLink } from "@/types/database";
@@ -25,6 +26,7 @@ type Project = {
   distribution_kind: DistributionKind | null;
   distribution_url: string | null;
   alternative_links: AlternativeLink[] | null;
+  content_locale: "it" | "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja";
 };
 
 function getYoutubeEmbedUrl(value: string) {
@@ -93,7 +95,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, owner_id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url, alternative_links",
+      "id, owner_id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url, alternative_links, content_locale",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -157,6 +159,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             {project.description}
           </p>
         </section>
+        <ProjectTranslation
+          projectId={project.id}
+          sourceLocale={project.content_locale}
+          original={{
+            title: project.title,
+            shortDescription: project.short_description,
+            description: project.description,
+          }}
+        />
 
         {youtubeEmbedUrl ? (
           <section className="space-y-3">

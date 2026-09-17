@@ -5,6 +5,8 @@ import { Gamepad2, LogOut, Menu, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CategorySwitch } from "@/components/layout/CategorySwitch";
 import { GlobalProjectSearch } from "@/components/layout/GlobalProjectSearch";
+import { LanguageSelector } from "@/components/i18n/LanguageSelector";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import { createClient } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
 
@@ -12,6 +14,7 @@ import type { User } from "@supabase/supabase-js";
 export function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useLocale();
 
   useEffect(() => {
     let mounted = true;
@@ -55,6 +58,7 @@ export function SiteHeader() {
           <GlobalProjectSearch />
         </div>
         <nav className="ml-auto hidden items-center gap-2 text-sm text-zinc-300 md:flex">
+          <LanguageSelector />
           {user ? (
             <>
               <Link
@@ -62,7 +66,7 @@ export function SiteHeader() {
                 className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15"
               >
                 <UserRound className="h-4 w-4" />
-                Dashboard / Il mio profilo
+                {t("nav.dashboard")}
               </Link>
               <button
                 type="button"
@@ -70,19 +74,19 @@ export function SiteHeader() {
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10 hover:text-white"
               >
                 <LogOut className="h-4 w-4" />
-                Esci
+                {t("nav.logout")}
               </button>
             </>
           ) : (
             <>
               <Link href="/login" className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15">
-                Accedi
+                {t("nav.login")}
               </Link>
               <Link
                 href="/register"
                 className="rounded-lg bg-accent px-3 py-1.5 font-semibold text-ink-950 hover:bg-accent-dim"
               >
-                Registrati
+                {t("nav.register")}
               </Link>
             </>
           )}
@@ -92,7 +96,7 @@ export function SiteHeader() {
           onClick={() => setMobileMenuOpen((open) => !open)}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-navigation"
-          aria-label={mobileMenuOpen ? "Chiudi menu" : "Apri menu"}
+          aria-label={mobileMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
           className="ml-auto inline-flex rounded-lg p-2 text-zinc-300 hover:bg-white/10 hover:text-white md:hidden"
         >
           {mobileMenuOpen ? (
@@ -105,6 +109,7 @@ export function SiteHeader() {
       {mobileMenuOpen ? (
         <div id="mobile-navigation" className="border-t border-white/10 px-4 pb-4 pt-3 sm:px-6 md:hidden">
           <div className="space-y-4">
+            <LanguageSelector />
             <CategorySwitch />
             <GlobalProjectSearch />
             <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-4 text-sm text-zinc-300">
@@ -116,7 +121,7 @@ export function SiteHeader() {
                     className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15"
                   >
                     <UserRound className="h-4 w-4" />
-                    Dashboard / Il mio profilo
+                    {t("nav.dashboard")}
                   </Link>
                   <button
                     type="button"
@@ -124,7 +129,7 @@ export function SiteHeader() {
                     className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10 hover:text-white"
                   >
                     <LogOut className="h-4 w-4" />
-                    Esci
+                    {t("nav.logout")}
                   </button>
                 </>
               ) : (
@@ -134,14 +139,14 @@ export function SiteHeader() {
                     onClick={closeMobileMenu}
                     className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15"
                   >
-                    Accedi
+                    {t("nav.login")}
                   </Link>
                   <Link
                     href="/register"
                     onClick={closeMobileMenu}
                     className="rounded-lg bg-accent px-3 py-1.5 font-semibold text-ink-950 hover:bg-accent-dim"
                   >
-                    Registrati
+                    {t("nav.register")}
                   </Link>
                 </>
               )}

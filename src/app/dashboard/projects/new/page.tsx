@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { createClient } from "@/lib/supabaseClient";
 import { moddingGames } from "@/data/modding-games";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import type {
   DevelopmentStatus,
   DistributionKind,
@@ -52,6 +53,7 @@ type CleanProjectPayload = {
   game_title: string | null;
   game_cover_url: string | null;
   mod_file_url: string | null;
+  content_locale: string;
   is_published: boolean;
 };
 
@@ -153,6 +155,7 @@ function getErrorMessage(error: unknown) {
 }
 
 export default function NewProjectPage() {
+  const { locale } = useLocale();
   const router = useRouter();
   const [category, setCategory] = useState<FormCategory>("gaming");
   const [publicationType, setPublicationType] =
@@ -342,6 +345,7 @@ export default function NewProjectPage() {
           ? optionalValue(form, "game_cover_url") || selectedGame?.cover_url || null
           : null,
         mod_file_url: isModding ? optionalValue(form, "mod_file_url") : null,
+        content_locale: locale,
       };
 
       const { error } = await supabase.from("projects").insert(cleanData);
