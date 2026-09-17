@@ -84,6 +84,7 @@ export type Project = {
   compatibility?: string | null;
   game_cover_url?: string | null;
   mod_file_url?: string | null;
+  notify_new_bugs?: boolean;
 };
 
 export type AlternativeLink = {

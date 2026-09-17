@@ -49,6 +49,7 @@ export default function ProjectEditForm({ project }: Props) {
           .filter((link) => link.label && link.url),
         cover_url: project.cover_url,
         is_published: form.get("is_published") === "on",
+        notify_new_bugs: form.get("notify_new_bugs") === "on",
       };
       if (coverFile instanceof File && coverFile.size > 0) {
         if (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type) || coverFile.size > 5 * 1024 * 1024) {
@@ -122,6 +123,10 @@ export default function ProjectEditForm({ project }: Props) {
       <label className="block text-sm">Nuova immagine di copertina<input name="cover_file" type="file" accept="image/jpeg,image/png,image/webp" className="mt-1 block w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm" /></label>
       {project.cover_url ? <img src={project.cover_url} alt="" className="h-32 w-full rounded-lg object-cover" /> : null}
       <label className="flex items-center gap-2 text-sm"><input name="is_published" type="checkbox" defaultChecked={project.is_published} /> Pubblicato</label>
+      <label className="flex items-center gap-2 text-sm">
+        <input name="notify_new_bugs" type="checkbox" defaultChecked={project.notify_new_bugs ?? true} />
+        Ricevi notifiche email per nuovi bug segnalati
+      </label>
       <button disabled={saving} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50">{saving ? "Salvataggio..." : "Salva modifiche"}</button>
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? <p role="alert" className="text-sm text-red-300">{error}</p> : null}

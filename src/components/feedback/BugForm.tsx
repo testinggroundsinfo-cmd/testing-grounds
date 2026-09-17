@@ -68,6 +68,19 @@ export function BugForm({
         setStatus("error");
         return;
       }
+      fetch(`/api/projects/${projectId}/bugs/notify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project_id: projectId,
+          title: cleanPayload.title,
+          bug_type: cleanPayload.bug_type,
+          steps: cleanPayload.steps,
+          reporter_id: user.id,
+        }),
+      }).catch(() => {
+        console.warn("Bug salvato, ma la notifica email non è stata consegnata.");
+      });
       setBugTitle("");
       setReproductionSteps("");
       setMessage("Report inviato, grazie per la segnalazione!");

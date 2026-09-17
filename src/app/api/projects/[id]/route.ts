@@ -17,6 +17,7 @@ type ProjectUpdate = {
   alternative_links?: { label: string; url: string }[];
   cover_url?: string | null;
   is_published?: boolean;
+  notify_new_bugs?: boolean;
 };
 
 function isValidPayload(value: unknown): value is ProjectUpdate {
@@ -55,6 +56,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     "alternative_links",
     "cover_url",
     "is_published",
+    "notify_new_bugs",
   ];
   for (const key of allowedKeys) {
     if (key in body) cleanData[key] = body[key] as never;
