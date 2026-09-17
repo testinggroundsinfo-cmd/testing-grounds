@@ -12,8 +12,6 @@ type SearchProject = {
   category: "gaming" | "software";
 };
 
-const supabase = createClient();
-
 export function GlobalProjectSearch() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
@@ -35,6 +33,7 @@ export function GlobalProjectSearch() {
     const timeout = window.setTimeout(async () => {
       setLoading(true);
       setError("");
+      const supabase = createClient();
 
       const [titleSearch, tagSearch, platformSearch] = await Promise.all([
         supabase

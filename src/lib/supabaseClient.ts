@@ -1,6 +1,14 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/keys";
 
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
+
 export function createClient() {
-  return createBrowserClient(getSupabaseUrl(), getSupabasePublishableKey());
+  if (!browserClient) {
+    browserClient = createBrowserClient(
+      getSupabaseUrl(),
+      getSupabasePublishableKey(),
+    );
+  }
+  return browserClient;
 }
