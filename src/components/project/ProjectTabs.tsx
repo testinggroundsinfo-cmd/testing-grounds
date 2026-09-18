@@ -8,6 +8,7 @@ import { ReportProjectButton } from "@/components/moderation/ReportProjectButton
 import { ProjectComments } from "@/components/project/ProjectComments";
 import { PublicFeedbackLists } from "@/components/feedback/PublicFeedbackLists";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import type { ProjectCategory } from "@/types/database";
 
 const tabIds = ["overview", "media", "changelog", "bugs", "community"] as const;
 type TabId = (typeof tabIds)[number];
@@ -24,7 +25,7 @@ export function ProjectTabs({
   projectTitle: string;
   projectId: string;
   projectOwnerId?: string;
-  category: "gaming" | "software";
+  category: ProjectCategory;
   overview: React.ReactNode;
   media: React.ReactNode;
   changelog: React.ReactNode;

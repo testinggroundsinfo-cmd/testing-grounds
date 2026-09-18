@@ -10,6 +10,7 @@ import { DownloadButton } from "@/components/project/DownloadButton";
 import { FavoriteButton } from "@/components/project/FavoriteButton";
 import { ShareButton } from "@/components/project/ShareButton";
 import { T } from "@/components/i18n/T";
+import { DockerCodeViewer } from "@/components/docker/DockerCodeViewer";
 import { createClient } from "@/lib/supabase/server";
 import type { DistributionKind } from "@/types/database";
 import type { AlternativeLink } from "@/types/database";
@@ -21,7 +22,7 @@ type ProjectPageProps = {
 type Project = {
   id: string;
   owner_id: string;
-  category: "gaming" | "software";
+  category: "gaming" | "software" | "docker";
   title: string;
   short_description: string | null;
   description: string;
@@ -36,6 +37,8 @@ type Project = {
   upvote_count: number | null;
   safety_reports_count: number | null;
   donation_url?: string | null;
+  docker_config: string | null;
+  docker_env_example: string | null;
 };
 
 type ProjectRelease = {
@@ -125,7 +128,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, owner_id, category, title, short_description, description, cover_url, youtube_url, vimeo_url, iframe_url, distribution_kind, distribution_url, alternative_links, content_locale, upvote_count, safety_reports_count",
+      "id, owner_id, category, title, short_description, description, cover_url, youtube_url, vimeo_url, iframe_url, distribution_kind, distribution_url, alternative_links, content_locale, upvote_count, safety_reports_count, docker_config, docker_env_example",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -183,7 +186,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         <header className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs uppercase tracking-widest text-accent">
-              {project.category === "gaming" ? "Progetto gaming" : "Software"}
+              {project.category === "gaming"
+                ? "Progetto gaming"
+                : project.category === "docker"
+                  ? "Docker & Container"
+                  : "Software"}
             </p>
             <ProjectUpvoteButton
               projectId={project.id}
@@ -239,6 +246,26 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         />
           </>}
           media={<>
+        {project.category === "docker" && project.docker_config ? (
+          <section className="space-y-3">
+            <div>
+              <h2 className="text-xl font-semibold">Configurazione Docker</h2>
+              <p className="mt-1 text-sm text-zinc-400">
+                Copia o scarica il Docker Compose, Dockerfile o setup condiviso dal creator.
+              </p>
+            </div>
+            <DockerCodeViewer
+              code={project.docker_config}
+              filename={project.docker_config.trimStart().startsWith("FROM") ? "Dockerfile" : "docker-compose.yml"}
+            />
+          </section>
+        ) : null}
+        {project.category === "docker" && project.docker_env_example ? (
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold">Variabili d&apos;ambiente d&apos;esempio</h2>
+            <DockerCodeViewer code={project.docker_env_example} filename=".env.example" />
+          </section>
+        ) : null}
         {youtubeEmbedUrl ? (
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">Video</h2>
