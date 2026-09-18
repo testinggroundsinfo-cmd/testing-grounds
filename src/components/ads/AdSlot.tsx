@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { adFormats, isEzoicConfigured } from "@/lib/ads";
 
 type AdSlotProps = {
   placement: "sidebar" | "footer";
@@ -18,6 +19,9 @@ export function AdSlot({
 
   return (
     <aside
+      data-ad-provider={isEzoicConfigured ? "ezoic" : "placeholder"}
+      data-ad-format={isSidebar ? adFormats.sidebar.desktop : adFormats.footer.desktop}
+      data-ad-slot={isSidebar ? "sidebar" : "footer"}
       className={`relative ad-slot advertisement adsbygoogle flex max-w-full items-center justify-center overflow-hidden border border-white/10 bg-ink-800/60 text-xs uppercase tracking-widest text-zinc-500 ${
         isSidebar
           ? "h-[250px] w-[min(100%,300px)] rounded-2xl p-4 lg:h-[600px] lg:w-[300px] xl:w-[336px]"
@@ -25,7 +29,21 @@ export function AdSlot({
       } ${className} ${isSidebar ? "mb-12" : "mb-10"}`}
       aria-label={ariaLabel ?? t("ads.slotAriaLabel")}
     >
-      <span>{t("ads.label")} · {isSidebar ? "300×600" : "970×90"}</span>
+      <span>
+        {t("ads.label")} ·{" "}
+        {isSidebar ? (
+          <>
+            <span className="sm:hidden">300×250</span>
+            <span className="hidden sm:inline lg:hidden">300×600</span>
+            <span className="hidden lg:inline">300×600 / 336×280</span>
+          </>
+        ) : (
+          <>
+            <span className="sm:hidden">728×90</span>
+            <span className="hidden sm:inline">728×90 / 970×90</span>
+          </>
+        )}
+      </span>
       <p className="absolute left-3 right-3 top-full mt-2 text-center text-[10px] normal-case leading-relaxed tracking-normal text-zinc-500">
         {t("ads.support")}
       </p>
