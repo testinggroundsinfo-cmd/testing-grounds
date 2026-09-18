@@ -15,8 +15,8 @@ export const isEzoicConfigured = Boolean(ezoicPublisherId);
 
 export const adFormats = {
   sidebar: {
-    desktop: "300x600",
-    wide: "336x280",
+    desktop: "160x600",
+    compact: "250x250",
     mobile: "300x250",
   },
   footer: {

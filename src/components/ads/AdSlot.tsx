@@ -24,7 +24,7 @@ export function AdSlot({
       data-ad-slot={isSidebar ? "sidebar" : "footer"}
       className={`relative ad-slot advertisement adsbygoogle flex max-w-full items-center justify-center overflow-hidden border border-white/10 bg-ink-800/60 text-xs uppercase tracking-widest text-zinc-500 ${
         isSidebar
-          ? "h-[250px] w-[min(100%,300px)] rounded-2xl p-4 lg:h-[600px] lg:w-[300px] xl:w-[336px]"
+          ? "h-[250px] w-[min(100%,300px)] rounded-2xl p-4 lg:h-[600px] lg:w-[160px]"
           : "min-h-[90px] w-full rounded-2xl px-3 py-5 sm:min-h-[90px] sm:px-6"
       } ${className} ${isSidebar ? "mb-12" : "mb-10"}`}
       aria-label={ariaLabel ?? t("ads.slotAriaLabel")}
@@ -34,8 +34,8 @@ export function AdSlot({
         {isSidebar ? (
           <>
             <span className="sm:hidden">300×250</span>
-            <span className="hidden sm:inline lg:hidden">300×600</span>
-            <span className="hidden lg:inline">300×600 / 336×280</span>
+            <span className="hidden sm:inline lg:hidden">300×250</span>
+            <span className="hidden lg:inline">160×600</span>
           </>
         ) : (
           <>
