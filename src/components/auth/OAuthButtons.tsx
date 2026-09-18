@@ -5,7 +5,7 @@ import { Github } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 
-type Provider = "google" | "github";
+type Provider = "google" | "github" | "discord";
 
 function GoogleIcon() {
   return (
@@ -30,9 +30,18 @@ function GoogleIcon() {
   );
 }
 
+function DiscordIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true" fill="#5865F2">
+      <path d="M20.32 4.37a19.8 19.8 0 0 0-4.89-1.52.07.07 0 0 0-.08.04c-.21.38-.45.87-.61 1.26a18.27 18.27 0 0 0-5.48 0 12.6 12.6 0 0 0-.62-1.26.08.08 0 0 0-.08-.04 19.74 19.74 0 0 0-4.89 1.52.07.07 0 0 0-.03.03C1.02 8.68.32 12.85.66 16.97a.08.08 0 0 0 .03.06 19.9 19.9 0 0 0 5.99 3.03.08.08 0 0 0 .09-.03c.46-.63.87-1.3 1.22-2a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.89.08.08 0 0 1-.01-.13c.13-.09.25-.19.37-.28a.07.07 0 0 1 .08-.01c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08.01c.12.1.24.19.37.28a.08.08 0 0 1-.01.13c-.6.35-1.22.65-1.87.89a.08.08 0 0 0-.04.11c.36.7.77 1.37 1.22 2a.08.08 0 0 0 .09.03 19.83 19.83 0 0 0 6-3.03.08.08 0 0 0 .03-.06c.4-4.76-.67-8.9-2.83-12.57a.06.06 0 0 0-.03-.03ZM8.68 14.6c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.21 0 2.17 1.1 2.15 2.42 0 1.34-.95 2.42-2.15 2.42Zm6.65 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.21 0 2.17 1.1 2.15 2.42 0 1.34-.94 2.42-2.15 2.42Z" />
+    </svg>
+  );
+}
+
 const providerIcons: Record<Provider, () => React.JSX.Element> = {
   google: GoogleIcon,
   github: () => <Github className="h-4 w-4" />,
+  discord: DiscordIcon,
 };
 
 export function OAuthButtons({ onError }: { onError: (message: string) => void }) {
@@ -60,8 +69,8 @@ export function OAuthButtons({ onError }: { onError: (message: string) => void }
         <span className="text-xs uppercase tracking-wide text-zinc-400">{t("auth.oauth.divider")}</span>
         <div className="h-px flex-1 bg-white/10" />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        {(["google", "github"] as Provider[]).map((provider) => {
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {(["google", "github", "discord"] as Provider[]).map((provider) => {
           const Icon = providerIcons[provider];
           return (
             <button
