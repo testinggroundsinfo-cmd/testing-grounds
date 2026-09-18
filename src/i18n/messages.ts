@@ -531,6 +531,10 @@ const dictionary: Record<string, Record<Locale, string>> = {
   "carousel.noCover": { it: "Nessuna copertina", en: "No cover", es: "Sin portada", fr: "Aucune couverture", de: "Kein Cover", pt: "Sem capa", zh: "暂无封面", ja: "カバーなし" },
   "carousel.prev": { it: "Progetti precedenti", en: "Previous projects", es: "Proyectos anteriores", fr: "Projets précédents", de: "Vorherige Projekte", pt: "Projetos anteriores", zh: "上一组项目", ja: "前のプロジェクト" },
   "carousel.next": { it: "Progetti successivi", en: "Next projects", es: "Proyectos siguientes", fr: "Projets suivants", de: "Nächste Projekte", pt: "Próximos projetos", zh: "下一组项目", ja: "次のプロジェクト" },
+  "carousel.modPopularTag": { it: "🏆 Top 10 Mod", en: "🏆 Top 10 Mods", es: "🏆 Top 10 Mods", fr: "🏆 Top 10 Mods", de: "🏆 Top 10 Mods", pt: "🏆 Top 10 Mods", zh: "🏆 热门 Mod Top 10", ja: "🏆 人気Mod Top 10" },
+  "carousel.modPopularTitle": { it: "Le Mod più popolari", en: "Most popular Mods", es: "Las Mods más populares", fr: "Les Mods les plus populaires", de: "Beliebteste Mods", pt: "Mods mais populares", zh: "最受欢迎的 Mod", ja: "人気Mod" },
+  "carousel.modNewTag": { it: "🆕 Nuove Mod", en: "🆕 New Mods", es: "🆕 Nuevas Mods", fr: "🆕 Nouvelles Mods", de: "🆕 Neue Mods", pt: "🆕 Novas Mods", zh: "🆕 新 Mod", ja: "🆕 新着Mod" },
+  "carousel.modNewTitle": { it: "Nuove Mod uscite", en: "Newly released Mods", es: "Nuevas Mods publicadas", fr: "Nouvelles Mods sorties", de: "Neue Mods", pt: "Novos Mods lançados", zh: "新发布的 Mod", ja: "新着Mod" },
 };
 
 export function getMessages(locale: Locale): Messages {

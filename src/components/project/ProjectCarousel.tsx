@@ -18,11 +18,13 @@ export type CarouselProject = {
   upvote_count?: number | null;
 };
 
-export type CarouselVariant = "popular" | "new";
+export type CarouselVariant = "popular" | "new" | "modPopular" | "modNew";
 
 const VARIANT_LIMIT: Record<CarouselVariant, number> = {
   popular: 10,
   new: 25,
+  modPopular: 10,
+  modNew: 25,
 };
 
 const VARIANT_KEYS: Record<
@@ -38,6 +40,18 @@ const VARIANT_KEYS: Record<
   new: {
     tag: "carousel.newTag",
     title: "carousel.newTitle",
+    badge: "carousel.badgeNew",
+    empty: "carousel.emptyNew",
+  },
+  modPopular: {
+    tag: "carousel.modPopularTag",
+    title: "carousel.modPopularTitle",
+    badge: "carousel.badgePopular",
+    empty: "carousel.emptyPopular",
+  },
+  modNew: {
+    tag: "carousel.modNewTag",
+    title: "carousel.modNewTitle",
     badge: "carousel.badgeNew",
     empty: "carousel.emptyNew",
   },
@@ -64,7 +78,9 @@ export function ProjectCarousel({
   const effectiveLimit = limit ?? VARIANT_LIMIT[variant];
 
   const items = useMemo(() => {
-    const sorted = variant === "popular" ? sortByPopularity(projects) : sortByNewest(projects);
+    const sorted = variant === "popular" || variant === "modPopular"
+      ? sortByPopularity(projects)
+      : sortByNewest(projects);
     return sorted.slice(0, effectiveLimit);
   }, [effectiveLimit, projects, variant]);
 

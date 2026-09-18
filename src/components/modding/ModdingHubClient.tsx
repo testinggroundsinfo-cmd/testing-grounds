@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Search, Sparkles } from "lucide-
 import { useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { ModdingGame } from "@/data/modding-games";
+import { ProjectCarousel, type CarouselProject } from "@/components/project/ProjectCarousel";
 
 type Activity = { count: number; interactions: number; latest: string };
 type GameItem = { game: ModdingGame } & Activity;
@@ -21,8 +22,10 @@ const filters: Filter[] = [
 
 export function ModdingHubClient({
   games,
+  modProjects,
 }: {
   games: GameItem[];
+  modProjects: Array<CarouselProject & { game_slug?: string | null; game_cover_url?: string | null }>;
 }) {
   const { t } = useLocale();
   const [query, setQuery] = useState("");
@@ -43,6 +46,14 @@ export function ModdingHubClient({
     [filter, games, normalizedQuery],
   );
   const featured = filteredGames[0];
+  const carouselMods = modProjects.map((mod) => ({
+    ...mod,
+    cover_url:
+      mod.cover_url ||
+      (mod.game_slug === "minecraft"
+        ? "/images/minecraft-fallback.svg"
+        : mod.game_cover_url || null),
+  }));
 
   function scrollCarousel(direction: 1 | -1) {
     const carousel = carouselRef.current;
@@ -135,6 +146,9 @@ export function ModdingHubClient({
           </div>
         </section>
       ) : null}
+
+      <ProjectCarousel variant="modPopular" projects={carouselMods} />
+      <ProjectCarousel variant="modNew" projects={carouselMods} />
 
       <section className="space-y-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
