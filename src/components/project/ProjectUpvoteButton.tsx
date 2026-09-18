@@ -4,6 +4,7 @@ import { ArrowBigUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { useToast } from "@/components/feedback/ToastProvider";
 
 export function ProjectUpvoteButton({
   projectId,
@@ -15,6 +16,7 @@ export function ProjectUpvoteButton({
   initialCount: number;
 }) {
   const { t } = useLocale();
+  const { toast } = useToast();
   const [count, setCount] = useState(initialCount);
   const [upvoted, setUpvoted] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -80,6 +82,7 @@ export function ProjectUpvoteButton({
         if (deleteError) throw deleteError;
         setUpvoted(false);
         setCount((current) => Math.max(0, current - 1));
+        toast(t("upvote.removed"));
       } else {
         const { error: insertError } = await supabase
           .from("project_upvotes")
@@ -87,9 +90,11 @@ export function ProjectUpvoteButton({
         if (insertError) throw insertError;
         setUpvoted(true);
         setCount((current) => current + 1);
+        toast(t("upvote.recorded"));
       }
     } catch (toggleError) {
       setError(toggleError instanceof Error ? toggleError.message : t("upvote.error"));
+      toast(t("upvote.error"), "error");
     } finally {
       setBusy(false);
     }

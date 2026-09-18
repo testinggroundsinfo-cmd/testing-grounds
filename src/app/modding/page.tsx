@@ -2,6 +2,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ModdingHubClient } from "@/components/modding/ModdingHubClient";
 import { moddingGames } from "@/data/modding-games";
 import { createClient } from "@/lib/supabase/server";
+import type { PlatformKind } from "@/types/database";
 
 type ModActivity = {
   game_slug: string | null;
@@ -19,6 +20,8 @@ type ModProject = {
   game_cover_url: string | null;
   created_at: string | null;
   upvote_count: number | null;
+  platforms: PlatformKind[] | null;
+  tags: string[] | null;
 };
 
 export default async function ModdingPage() {
@@ -34,7 +37,7 @@ export default async function ModdingPage() {
       .eq("is_published", true),
       supabase
         .from("projects")
-        .select("id, owner_id, title, short_description, description, cover_url, game_slug, game_cover_url, created_at, upvote_count")
+        .select("id, owner_id, title, short_description, description, cover_url, game_slug, game_cover_url, created_at, upvote_count, platforms, tags")
         .eq("project_type", "mod")
         .eq("is_published", true)
         .order("created_at", { ascending: false })

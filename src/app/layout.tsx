@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdBlockDetector } from "@/components/ads/AdBlockDetector";
+import { ToastProvider } from "@/components/feedback/ToastProvider";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -25,12 +26,14 @@ export default async function RootLayout({
     <html lang={locale} className="dark">
       <body className="min-h-screen">
         <LocaleProvider initialLocale={locale}>
-          <AdBlockDetector />
-          <SiteHeader />
-          <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            {children}
-          </main>
-          <SiteFooter />
+          <ToastProvider>
+            <AdBlockDetector />
+            <SiteHeader />
+            <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+              {children}
+            </main>
+            <SiteFooter />
+          </ToastProvider>
         </LocaleProvider>
       </body>
     </html>

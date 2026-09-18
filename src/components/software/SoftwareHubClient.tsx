@@ -8,6 +8,7 @@ import { AdBanner } from "@/components/ads/AdBanner";
 import { ProjectCarousel } from "@/components/project/ProjectCarousel";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { FavoriteButton } from "@/components/project/FavoriteButton";
+import { CatalogPlatformFilters, projectMatchesPlatform, type QuickPlatform } from "@/components/project/CatalogPlatformFilters";
 
 export type SoftwareProject = {
   id: string;
@@ -51,24 +52,24 @@ function getCategory(project: SoftwareProject): Exclude<Filter, "Tutti"> {
   return "Utility";
 }
 
-type SortOrder = "newest" | "oldest";
+type SortOrder = "popular" | "newest" | "mostVoted";
 
 export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] }) {
   const { t } = useLocale();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [platform, setPlatform] = useState<QuickPlatform>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("popular");
   const visible = useMemo(() => projects.filter((project) => {
     const searchable = `${project.title ?? ""} ${project.description ?? ""} ${(project.tags ?? []).join(" ")} ${(project.platforms ?? [])
       .map((platform) => platform)
       .join(" ")}`.toLowerCase();
     const matchesQuery = !query.trim() || searchable.includes(query.trim().toLowerCase());
-    return matchesQuery && (filter === "Tutti" || getCategory(project) === filter);
+    return matchesQuery && (filter === "Tutti" || getCategory(project) === filter) && projectMatchesPlatform(project, platform);
   }).sort((a, b) => {
-    const dateA = a.created_at ?? "";
-    const dateB = b.created_at ?? "";
-    return sortOrder === "newest" ? dateB.localeCompare(dateA) : dateA.localeCompare(dateB);
-  }), [filter, projects, query, sortOrder]);
+    if (sortOrder === "newest") return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+    return (b.upvote_count ?? 0) - (a.upvote_count ?? 0) || (b.created_at ?? "").localeCompare(a.created_at ?? "");
+  }), [filter, platform, projects, query, sortOrder]);
 
   function Card({ project, badge }: { project: SoftwareProject; badge: "Trending" | "Popolare" | "Novità" }) {
     return (
@@ -127,12 +128,14 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
           <label className="flex items-center gap-2 text-xs text-zinc-400">
             {t("gaming.hub.sortBy")}
             <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as SortOrder)} className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-accent/50">
-              <option value="newest">{t("gaming.hub.sortNewest")}</option>
-              <option value="oldest">{t("gaming.hub.sortOldest")}</option>
+              <option value="popular">{t("filter.sortPopular")}</option>
+              <option value="newest">{t("filter.sortRecent")}</option>
+              <option value="mostVoted">{t("filter.sortMostVoted")}</option>
             </select>
           </label>
         </div>
         <div className="flex flex-wrap gap-2">{filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3 py-1.5 text-xs ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{t(filterKeys[item])}</button>)}</div>
+        <CatalogPlatformFilters value={platform} onChange={setPlatform} />
       </section>
       <section className="space-y-4">
         <div><p className="text-xs uppercase tracking-widest text-accent">{t("software.hub.catalogTag")}</p><h2 className="mt-1 text-2xl font-semibold">{t("software.hub.catalogTitle")}</h2></div>

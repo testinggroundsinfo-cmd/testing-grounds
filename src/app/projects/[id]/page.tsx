@@ -3,12 +3,12 @@ import { ArrowLeft, ExternalLink, Heart } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProjectTabs } from "@/components/project/ProjectTabs";
-import { PublicFeedbackLists } from "@/components/feedback/PublicFeedbackLists";
 import { ProjectTranslation } from "@/components/project/ProjectTranslation";
 import { ProjectUpvoteButton } from "@/components/project/ProjectUpvoteButton";
 import { SafetyBadge } from "@/components/project/SafetyBadge";
 import { DownloadButton } from "@/components/project/DownloadButton";
 import { FavoriteButton } from "@/components/project/FavoriteButton";
+import { ShareButton } from "@/components/project/ShareButton";
 import { T } from "@/components/i18n/T";
 import { createClient } from "@/lib/supabase/server";
 import type { DistributionKind } from "@/types/database";
@@ -191,6 +191,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               initialCount={project.upvote_count ?? 0}
             />
             <FavoriteButton projectId={project.id} ownerId={project.owner_id} />
+            <ShareButton />
           </div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {project.title}
@@ -202,6 +203,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           ) : null}
         </header>
 
+        <ProjectTabs
+          projectTitle={project.title}
+          projectId={project.id}
+          projectOwnerId={project.owner_id}
+          category={project.category}
+          overview={<>
         {project.cover_url ? (
           <div
             role="img"
@@ -210,7 +217,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             style={{ backgroundImage: `url(${project.cover_url})` }}
           />
         ) : null}
-
         <section className="rounded-2xl border border-white/10 bg-ink-800 p-6">
           <h2 className="text-xl font-semibold">Descrizione</h2>
           <p className="mt-4 whitespace-pre-wrap leading-relaxed text-zinc-300">
@@ -231,7 +237,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             description: project.description,
           }}
         />
-
+          </>}
+          media={<>
         {youtubeEmbedUrl ? (
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">Video</h2>
@@ -278,7 +285,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </div>
           </section>
         ) : null}
-
+          </>}
+          changelog={<>
         {project.distribution_url || alternativeLinks.length > 0 ? (
           <section className="rounded-2xl border border-accent/30 bg-accent/5 p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -343,16 +351,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </ul>
           </section>
         ) : null}
-
-        <ProjectTabs
-          projectTitle={project.title}
-          projectId={project.id}
-          projectOwnerId={project.owner_id}
-          category={project.category}
+          </>}
         />
-        <PublicFeedbackLists projectId={project.id} projectOwnerId={project.owner_id} />
       </article>
     </AppShell>
   );
 }
-

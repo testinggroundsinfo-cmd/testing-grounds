@@ -6,6 +6,8 @@ import { useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { ModdingGame } from "@/data/modding-games";
 import { ProjectCarousel, type CarouselProject } from "@/components/project/ProjectCarousel";
+import { CatalogPlatformFilters, projectMatchesPlatform, type QuickPlatform } from "@/components/project/CatalogPlatformFilters";
+import type { PlatformKind } from "@/types/database";
 
 type Activity = { count: number; interactions: number; latest: string };
 type GameItem = { game: ModdingGame } & Activity;
@@ -25,13 +27,24 @@ export function ModdingHubClient({
   modProjects,
 }: {
   games: GameItem[];
-  modProjects: Array<CarouselProject & { game_slug?: string | null; game_cover_url?: string | null }>;
+  modProjects: Array<CarouselProject & { game_slug?: string | null; game_cover_url?: string | null; platforms?: PlatformKind[] | null; tags?: string[] | null }>;
 }) {
   const { t } = useLocale();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("Tutti");
+  const [platform, setPlatform] = useState<QuickPlatform>("all");
+  const [sortOrder, setSortOrder] = useState<"popular" | "newest" | "mostVoted">("popular");
   const carouselRef = useRef<HTMLUListElement>(null);
   const normalizedQuery = query.trim().toLowerCase();
+
+  const modPlatformsByGame = useMemo(() => {
+    const values = new Map<string, Array<Pick<(typeof modProjects)[number], "platforms" | "tags">>>();
+    modProjects.forEach((project) => {
+      if (!project.game_slug) return;
+      values.set(project.game_slug, [...(values.get(project.game_slug) ?? []), project]);
+    });
+    return values;
+  }, [modProjects]);
 
   const filteredGames = useMemo(
     () =>
@@ -41,9 +54,14 @@ export function ModdingHubClient({
           game.name.toLowerCase().includes(normalizedQuery);
         const matchesFilter =
           filter === "Tutti" || game.category === filter;
-        return matchesQuery && matchesFilter;
+        const relatedMods = modPlatformsByGame.get(game.slug) ?? [];
+        const matchesPlatform = platform === "all" || relatedMods.some((mod) => projectMatchesPlatform(mod, platform));
+        return matchesQuery && matchesFilter && matchesPlatform;
+      }).sort((a, b) => {
+        if (sortOrder === "newest") return b.latest.localeCompare(a.latest);
+        return b.interactions - a.interactions || b.latest.localeCompare(a.latest);
       }),
-    [filter, games, normalizedQuery],
+    [filter, games, modPlatformsByGame, normalizedQuery, platform, sortOrder],
   );
   const featured = filteredGames[0];
   const carouselMods = modProjects.map((mod) => ({
@@ -156,12 +174,21 @@ export function ModdingHubClient({
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("modding.hub.searchPlaceholder")} aria-label={t("modding.hub.searchLabel")} className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" />
           </div>
+          <label className="flex items-center gap-2 text-xs text-zinc-400">
+            {t("gaming.hub.sortBy")}
+            <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)} className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-accent/50">
+              <option value="popular">{t("filter.sortPopular")}</option>
+              <option value="newest">{t("filter.sortRecent")}</option>
+              <option value="mostVoted">{t("filter.sortMostVoted")}</option>
+            </select>
+          </label>
           <div className="flex flex-wrap gap-2">
             {filters.map((item) => (
               <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3 py-1.5 text-xs transition ${filter === item ? "bg-accent text-ink-950" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>{item}</button>
             ))}
           </div>
         </div>
+        <CatalogPlatformFilters value={platform} onChange={setPlatform} />
       </section>
 
       <section className="space-y-4">

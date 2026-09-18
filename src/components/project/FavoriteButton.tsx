@@ -3,6 +3,7 @@
 import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { useToast } from "@/components/feedback/ToastProvider";
 import { createClient } from "@/lib/supabaseClient";
 
 export function FavoriteButton({
@@ -15,6 +16,7 @@ export function FavoriteButton({
   compact?: boolean;
 }) {
   const { t } = useLocale();
+  const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -63,9 +65,10 @@ export function FavoriteButton({
       : await supabase.from("project_favorites").delete().eq("project_id", projectId).eq("user_id", userId);
     if (error) {
       console.error("Unable to update favorite:", error);
-      window.alert(t("favorites.updateError"));
+      toast(t("favorites.updateError"), "error");
     } else {
       setIsFavorite(nextValue);
+      toast(t(nextValue ? "favorites.added" : "favorites.removed"));
     }
     setSaving(false);
   }
