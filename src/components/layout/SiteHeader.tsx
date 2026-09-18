@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Gamepad2, LogOut, Menu, UserRound, X } from "lucide-react";
+import { AppWindow, ChevronDown, Container, Gamepad2, LogOut, Menu, Puzzle, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { CategorySwitch } from "@/components/layout/CategorySwitch";
 import { GlobalProjectSearch } from "@/components/layout/GlobalProjectSearch";
 import { LanguageSelector } from "@/components/i18n/LanguageSelector";
@@ -17,6 +18,7 @@ export function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t } = useLocale();
+  const pathname = usePathname();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -50,11 +52,26 @@ export function SiteHeader() {
     setMobileMenuOpen(false);
   }
 
+  const BrandIcon =
+    pathname === "/gaming" || pathname.startsWith("/gaming/")
+      ? Gamepad2
+      : pathname === "/software" || pathname.startsWith("/software/")
+        ? AppWindow
+        : pathname === "/modding" || pathname.startsWith("/modding/")
+          ? Puzzle
+          : pathname === "/docker" || pathname.startsWith("/docker/")
+            ? Container
+            : null;
+
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" onClick={closeMobileMenu} className="flex min-w-0 items-center gap-2 font-semibold tracking-tight">
-          <Gamepad2 className="h-5 w-5 text-accent" />
+          {BrandIcon ? (
+            <BrandIcon className="h-5 w-5 text-accent" aria-hidden="true" />
+          ) : (
+            <img src="/logo-completo.jpg" alt="" className="h-6 w-6 rounded-md object-cover" />
+          )}
           <span className="hidden sm:inline">Testing-Grounds</span>
         </Link>
         <div className="hidden min-w-0 flex-1 md:block">

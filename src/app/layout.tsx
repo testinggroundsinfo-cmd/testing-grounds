@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   title: "Testing-Grounds — Beta & Playtest per indie",
   description:
     "Piattaforma gratuita per il beta testing e il playtesting di giochi indie e software.",
+  icons: {
+    icon: [{ url: "/logo-top-browser.jpg", type: "image/jpeg" }],
+    shortcut: ["/logo-top-browser.jpg"],
+  },
 };
 
 export default async function RootLayout({
