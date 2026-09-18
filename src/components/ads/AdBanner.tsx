@@ -14,7 +14,7 @@ export function AdBanner({
   return (
     <AdSlot
       placement="footer"
-      className="mb-0 min-h-[90px] w-full max-w-full"
+      className="mx-auto mb-0 min-h-[90px] w-full max-w-[970px]"
       aria-label={t("ads.bannerAriaLabel", { slotId })}
     />
   );
