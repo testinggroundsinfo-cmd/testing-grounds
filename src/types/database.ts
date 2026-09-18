@@ -1,4 +1,4 @@
-﻿export type ProjectCategory = "gaming" | "software";
+export type ProjectCategory = "gaming" | "software" | "docker";
 export type ProjectType = "project" | "mod";
 
 export type DevelopmentStatus =

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gamepad2, AppWindow, Puzzle } from "lucide-react";
+import { Gamepad2, AppWindow, Puzzle, Container } from "lucide-react";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 
 const items = [
   { href: "/gaming", key: "categorySwitch.gaming", icon: Gamepad2 },
   { href: "/software", key: "categorySwitch.software", icon: AppWindow },
   { href: "/modding", key: "categorySwitch.modding", icon: Puzzle },
+  { href: "/docker", key: "categorySwitch.docker", icon: Container },
 ] as const;
 
 export function CategorySwitch() {

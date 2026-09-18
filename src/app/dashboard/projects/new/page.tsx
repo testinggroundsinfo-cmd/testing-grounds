@@ -15,7 +15,7 @@ import type {
   AlternativeLink,
 } from "@/types/database";
 
-type FormCategory = "gaming" | "software" | "modding";
+type FormCategory = "gaming" | "software" | "modding" | "docker";
 type PublicationType =
   | "full_game"
   | "demo"
@@ -78,6 +78,9 @@ const publicationTypes: Record<FormCategory, readonly [PublicationType, string][
     ["browser_extension", "Estensione Browser"],
     ["tool", "Tool / Script"],
   ],
+  docker: [
+    ["tool", "Docker / Container"],
+  ],
 };
 
 const publicationTypeKeys: Record<PublicationType, string> = {
@@ -109,6 +112,10 @@ const platformsByCategory: Record<
     ["mobile_android", "Android"],
     ["desktop", "Desktop"],
     ["browser_extension", "Estensione browser"],
+  ],
+  docker: [
+    ["web_saas", "Server / Self-hosted"],
+    ["desktop", "Script / Setup"],
   ],
 };
 
@@ -253,7 +260,7 @@ export default function NewProjectPage() {
 
     const form = new FormData(event.currentTarget);
     const submitCategory: ProjectCategory =
-      category === "software" ? "software" : "gaming";
+      category === "software" || category === "docker" ? category : "gaming";
     const title = String(form.get("title") ?? "").trim();
     const shortPitch = String(form.get("short_description") ?? "").trim();
     const description = String(form.get("description") ?? "").trim();
@@ -322,6 +329,8 @@ export default function NewProjectPage() {
         ? selectedPlatforms
         : submitCategory === "software"
           ? (["desktop"] as PlatformKind[])
+          : submitCategory === "docker"
+            ? (["web_saas"] as PlatformKind[])
           : (["pc"] as PlatformKind[]);
     const selectedStatus = String(form.get("status") || "alpha");
     const developmentStatus = developmentStatuses.some(
@@ -473,6 +482,7 @@ export default function NewProjectPage() {
             <option value="gaming">{t("newProject.categoryGaming")}</option>
             <option value="software">{t("newProject.categorySoftware")}</option>
             <option value="modding">{t("newProject.categoryModding")}</option>
+            <option value="docker">{t("newProject.categoryDocker")}</option>
           </select>
         </label>
 
@@ -642,7 +652,7 @@ export default function NewProjectPage() {
         <fieldset className="space-y-2">
           <legend className="text-sm">{t("newProject.platforms")}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
-            {platformsByCategory[category === "software" ? "software" : "gaming"].map(
+            {platformsByCategory[category === "modding" ? "gaming" : category].map(
               ([value]) => (
               <label key={value} className="text-sm">
                 <input
