@@ -1,7 +1,10 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ArrowLeft, ExternalLink, Globe, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
+import { FollowButton } from "@/components/profile/FollowButton";
+import { ActivityBadges, type ActivityBadgeKind } from "@/components/profile/ActivityBadges";
+import { T } from "@/components/i18n/T";
 import { createClient } from "@/lib/supabase/server";
 import type { PlatformKind, ProjectCategory, ProjectType } from "@/types/database";
 
@@ -28,6 +31,7 @@ type PublishedProject = {
   cover_url: string | null;
   project_type: ProjectType | null;
   game_title: string | null;
+  upvote_count: number | null;
 };
 
 const platformLabels: Record<PlatformKind, string> = {
@@ -55,19 +59,50 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     notFound();
   }
 
-  const { data: projects, error: projectsError } = await supabase
-    .from("projects")
-    .select(
-      "id, title, category, slug, description, platforms, cover_url, project_type, game_title",
-    )
-    .eq("owner_id", profile.id)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
+  const [
+    { data: projects, error: projectsError },
+    { count: followersCount },
+    { count: followingCount },
+    { count: approvedReviewsCount },
+    { count: approvedBugsCount },
+  ] = await Promise.all([
+    supabase
+      .from("projects")
+      .select(
+        "id, title, category, slug, description, platforms, cover_url, project_type, game_title, upvote_count",
+      )
+      .eq("owner_id", profile.id)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false }),
+    supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", profile.id),
+    supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", profile.id),
+    supabase
+      .from("project_reviews")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", profile.id)
+      .eq("status", "approved"),
+    supabase
+      .from("project_bugs")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", profile.id)
+      .eq("status", "approved"),
+  ]);
 
   if (projectsError) {
     throw new Error("Impossibile caricare i progetti del creatore.");
   }
   const publishedProjects = (projects ?? []) as PublishedProject[];
+  const totalUpvotesReceived = publishedProjects.reduce(
+    (sum, project) => sum + (project.upvote_count ?? 0),
+    0,
+  );
+  const approvedFeedbackCount = (approvedReviewsCount ?? 0) + (approvedBugsCount ?? 0);
+
+  const badges: ActivityBadgeKind[] = [];
+  if (approvedFeedbackCount >= 3) badges.push("verifiedTester");
+  if (publishedProjects.length >= 3) badges.push("prolificCreator");
+  if (totalUpvotesReceived >= 10) badges.push("communityFavorite");
+  if ((followersCount ?? 0) >= 5) badges.push("risingStar");
 
   return (
     <AppShell>
@@ -123,6 +158,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               ) : null}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <FollowButton profileId={profile.id} initialFollowerCount={followersCount ?? 0} />
+                <span className="text-xs text-zinc-500">
+                  <T k="follow.followingCount" params={{ count: followingCount ?? 0 }} />
+                </span>
+              </div>
+              <ActivityBadges badges={badges} />
             </div>
           </div>
         </header>

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +12,7 @@ type ProjectUpdate = {
   short_description?: string | null;
   description?: string;
   youtube_url?: string | null;
+  vimeo_url?: string | null;
   iframe_url?: string | null;
   distribution_url?: string | null;
   alternative_links?: { label: string; url: string }[];
@@ -51,6 +52,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     "short_description",
     "description",
     "youtube_url",
+    "vimeo_url",
     "iframe_url",
     "distribution_url",
     "alternative_links",

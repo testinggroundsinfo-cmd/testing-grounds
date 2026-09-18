@@ -1,10 +1,14 @@
-import Link from "next/link";
-import { ArrowLeft, Download, ExternalLink } from "lucide-react";
+﻿import Link from "next/link";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProjectTabs } from "@/components/project/ProjectTabs";
 import { PublicFeedbackLists } from "@/components/feedback/PublicFeedbackLists";
 import { ProjectTranslation } from "@/components/project/ProjectTranslation";
+import { ProjectUpvoteButton } from "@/components/project/ProjectUpvoteButton";
+import { SafetyBadge } from "@/components/project/SafetyBadge";
+import { DownloadButton } from "@/components/project/DownloadButton";
+import { T } from "@/components/i18n/T";
 import { createClient } from "@/lib/supabase/server";
 import type { DistributionKind } from "@/types/database";
 import type { AlternativeLink } from "@/types/database";
@@ -22,11 +26,21 @@ type Project = {
   description: string;
   cover_url: string | null;
   youtube_url: string | null;
+  vimeo_url: string | null;
   iframe_url: string | null;
   distribution_kind: DistributionKind | null;
   distribution_url: string | null;
   alternative_links: AlternativeLink[] | null;
   content_locale: "it" | "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja";
+  upvote_count: number | null;
+  safety_reports_count: number | null;
+};
+
+type ProjectRelease = {
+  id: string;
+  version: string;
+  changelog: string | null;
+  created_at: string;
 };
 
 function getYoutubeEmbedUrl(value: string) {
@@ -54,6 +68,20 @@ function getYoutubeEmbedUrl(value: string) {
     return null;
   }
 
+  return null;
+}
+
+function getVimeoEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+    if (url.hostname === "vimeo.com" || url.hostname === "www.vimeo.com" || url.hostname === "player.vimeo.com") {
+      const match = url.pathname.match(/(\d+)/);
+      const videoId = match?.[1];
+      return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
+    }
+  } catch {
+    return null;
+  }
   return null;
 }
 
@@ -95,7 +123,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, owner_id, category, title, short_description, description, cover_url, youtube_url, iframe_url, distribution_kind, distribution_url, alternative_links, content_locale",
+      "id, owner_id, category, title, short_description, description, cover_url, youtube_url, vimeo_url, iframe_url, distribution_kind, distribution_url, alternative_links, content_locale, upvote_count, safety_reports_count",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -106,12 +134,26 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }
 
   const project = data as Project;
+
+  // Fire-and-forget view tracking: never blocks rendering the page.
+  void supabase.from("project_events").insert({ project_id: project.id, event_type: "view" });
+
+  const { data: releases } = await supabase
+    .from("project_releases")
+    .select("id, version, changelog, created_at")
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
   const heroDescription = getHeroDescription(
     project.short_description,
     project.description,
   );
   const youtubeEmbedUrl = project.youtube_url
     ? getYoutubeEmbedUrl(project.youtube_url)
+    : null;
+  const vimeoEmbedUrl = project.vimeo_url
+    ? getVimeoEmbedUrl(project.vimeo_url)
     : null;
   const alternativeLinks = Array.isArray(project.alternative_links)
     ? project.alternative_links.filter(
@@ -131,9 +173,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         </Link>
 
         <header className="space-y-3">
-          <p className="text-xs uppercase tracking-widest text-accent">
-            {project.category === "gaming" ? "Progetto gaming" : "Software"}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-widest text-accent">
+              {project.category === "gaming" ? "Progetto gaming" : "Software"}
+            </p>
+            <ProjectUpvoteButton
+              projectId={project.id}
+              ownerId={project.owner_id}
+              initialCount={project.upvote_count ?? 0}
+            />
+          </div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {project.title}
           </h1>
@@ -184,6 +233,21 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </section>
         ) : null}
 
+        {vimeoEmbedUrl ? (
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold">Vimeo</h2>
+            <div className="aspect-video overflow-hidden rounded-2xl border border-white/10 bg-ink-800">
+              <iframe
+                src={vimeoEmbedUrl}
+                title={`Vimeo di ${project.title}`}
+                className="h-full w-full"
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        ) : null}
+
         {project.iframe_url ? (
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">
@@ -203,27 +267,23 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
         {project.distribution_url || alternativeLinks.length > 0 ? (
           <section className="rounded-2xl border border-accent/30 bg-accent/5 p-6">
-            <h2 className="text-xl font-semibold">
-              {project.category === "gaming" ? "Scarica Ora / Prova il Gioco" : "Accedi al progetto"}
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold">
+                {project.category === "gaming" ? "Scarica Ora / Prova il Gioco" : "Accedi al progetto"}
+              </h2>
+              <SafetyBadge reportsCount={project.safety_reports_count ?? 0} />
+            </div>
             <p className="mt-2 text-sm text-zinc-400">
               Usa il link principale oppure una fonte alternativa.
             </p>
             {project.distribution_url ? (
-              <a
+              <DownloadButton
+                projectId={project.id}
                 href={project.distribution_url}
-                target="_blank"
-                rel="noreferrer"
-                download={project.distribution_kind ? isDownload(project.distribution_kind) : undefined}
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-dim"
+                isDownload={project.distribution_kind ? isDownload(project.distribution_kind) : false}
               >
-                {project.distribution_kind && isDownload(project.distribution_kind) ? (
-                  <Download className="h-4 w-4" />
-                ) : (
-                  <ExternalLink className="h-4 w-4" />
-                )}
                 {project.distribution_kind ? distributionLabel(project.distribution_kind) : "Scarica Ora"}
-              </a>
+              </DownloadButton>
             ) : null}
             {alternativeLinks.length > 0 ? (
               <details className="mt-5 rounded-lg border border-white/10 bg-ink-900/40 p-4">
@@ -249,9 +309,31 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </section>
         ) : null}
 
+        {releases && releases.length > 0 ? (
+          <section className="space-y-3 rounded-2xl border border-white/10 bg-ink-800 p-6">
+            <h2 className="text-xl font-semibold"><T k="changelog.title" /></h2>
+            <ul className="space-y-4">
+              {(releases as ProjectRelease[]).map((release) => (
+                <li key={release.id} className="border-l-2 border-accent/40 pl-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="font-semibold">v{release.version}</p>
+                    <time className="text-xs text-zinc-500">
+                      {new Date(release.created_at).toLocaleDateString()}
+                    </time>
+                  </div>
+                  {release.changelog ? (
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-300">{release.changelog}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <ProjectTabs
           projectTitle={project.title}
           projectId={project.id}
+          projectOwnerId={project.owner_id}
           category={project.category}
         />
         <PublicFeedbackLists projectId={project.id} projectOwnerId={project.owner_id} />
@@ -259,3 +341,5 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     </AppShell>
   );
 }
+
+

@@ -44,6 +44,7 @@ export default function ProjectEditForm({ project }: Props) {
         slug: String(form.get("slug") ?? "").trim() || project.slug,
         description,
         youtube_url: valueOrNull(String(form.get("youtube_url") ?? "")),
+        vimeo_url: valueOrNull(String(form.get("vimeo_url") ?? "")),
         iframe_url: valueOrNull(String(form.get("iframe_url") ?? "")),
         distribution_url: valueOrNull(String(form.get("distribution_url") ?? "")),
         alternative_links: alternativeLinks
@@ -94,6 +95,7 @@ export default function ProjectEditForm({ project }: Props) {
       <label className="block text-sm">{t("projectEdit.description")}<textarea name="description" required defaultValue={project.description} rows={7} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">{t("projectEdit.youtubeUrl")}<input name="youtube_url" type="url" defaultValue={project.youtube_url ?? ""} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
+        <label className="block text-sm">{t("projectEdit.vimeoUrl")}<input name="vimeo_url" type="url" defaultValue={project.vimeo_url ?? ""} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
         <label className="block text-sm">{t("projectEdit.iframeUrl")}<input name="iframe_url" type="url" defaultValue={project.iframe_url ?? ""} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>
       </div>
       <label className="block text-sm">{t("projectEdit.distributionLink")}<input name="distribution_url" type="url" defaultValue={project.distribution_url ?? ""} className="mt-1 w-full rounded-lg border border-white/10 bg-ink-900 px-3 py-2" /></label>

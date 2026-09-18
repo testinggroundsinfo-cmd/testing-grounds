@@ -1,4 +1,4 @@
-export type ProjectCategory = "gaming" | "software";
+﻿export type ProjectCategory = "gaming" | "software";
 export type ProjectType = "project" | "mod";
 
 export type DevelopmentStatus =
@@ -71,6 +71,7 @@ export type Project = {
   tags: string[];
   cover_url: string | null;
   youtube_url: string | null;
+  vimeo_url?: string | null;
   iframe_url: string | null;
   distribution_kind: DistributionKind | null;
   distribution_url: string | null;
@@ -87,6 +88,8 @@ export type Project = {
   game_cover_url?: string | null;
   mod_file_url?: string | null;
   notify_new_bugs?: boolean;
+  upvote_count?: number;
+  safety_reports_count?: number;
 };
 
 export type AlternativeLink = {
@@ -144,4 +147,37 @@ export type ProjectInsert = Omit<
 > & {
   owner_id: string;
   is_published?: boolean;
+};
+
+
+export type ProjectComment = {
+  id: string;
+  project_id: string;
+  user_id: string | null;
+  body: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectUpvote = {
+  id: string;
+  project_id: string;
+  user_id: string;
+  created_at: string;
+};
+
+export type Follow = {
+  follower_id: string;
+  following_id: string;
+  created_at: string;
+};
+
+export type ProjectEventType = "view" | "download_click";
+
+export type ProjectEvent = {
+  id: string;
+  project_id: string;
+  event_type: ProjectEventType;
+  user_id: string | null;
+  created_at: string;
 };

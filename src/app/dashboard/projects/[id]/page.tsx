@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ApplicationsPanel, type ProjectApplicationRow } from "@/components/dashboard/ApplicationsPanel";
+import { ProjectAnalytics } from "@/components/dashboard/ProjectAnalytics";
 import { T } from "@/components/i18n/T";
 
 export default async function DashboardProjectPage({
@@ -29,6 +30,37 @@ export default async function DashboardProjectPage({
     .order("created_at", { ascending: false });
   if (applicationsError) console.error("Errore caricamento candidature:", applicationsError);
 
+  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const [
+    { count: totalViews },
+    { count: totalDownloadClicks },
+    { count: views30d },
+    { count: downloadClicks30d },
+  ] = await Promise.all([
+    supabase
+      .from("project_events")
+      .select("*", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("event_type", "view"),
+    supabase
+      .from("project_events")
+      .select("*", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("event_type", "download_click"),
+    supabase
+      .from("project_events")
+      .select("*", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("event_type", "view")
+      .gte("created_at", since30d),
+    supabase
+      .from("project_events")
+      .select("*", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("event_type", "download_click")
+      .gte("created_at", since30d),
+  ]);
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
@@ -40,6 +72,13 @@ export default async function DashboardProjectPage({
           <Link href={`/projects/${id}`} className="rounded-md border border-white/10 px-3 py-1.5"><T k="dashboard.viewPublicPage" /></Link>
         </div>
       </div>
+
+      <ProjectAnalytics
+        totalViews={totalViews ?? 0}
+        totalDownloadClicks={totalDownloadClicks ?? 0}
+        views30d={views30d ?? 0}
+        downloadClicks30d={downloadClicks30d ?? 0}
+      />
 
       <section className="space-y-3">
         <h2 className="text-lg font-medium"><T k="dashboard.collaboratorApplications" /></h2>
