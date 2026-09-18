@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   description:
     "Piattaforma gratuita per il beta testing e il playtesting di giochi indie e software.",
   icons: {
-    icon: [{ url: "/logo-top-browser.jpg", type: "image/jpeg" }],
-    shortcut: ["/logo-top-browser.jpg"],
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    shortcut: ["/logo.png"],
   },
 };
 
