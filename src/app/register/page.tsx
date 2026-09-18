@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,6 +33,7 @@ export default function RegisterPage() {
         <button className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink-950">{t("auth.register.submit")}</button>
         {message ? <p className="text-sm text-zinc-300">{message}</p> : null}
       </form>
+      <OAuthButtons onError={setMessage} />
     </div>
   );
 }
