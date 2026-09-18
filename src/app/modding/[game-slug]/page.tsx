@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { MINECRAFT_FALLBACK_COVER, moddingGameBySlug } from "@/data/modding-games";
 import { createClient } from "@/lib/supabase/server";
+import { FavoriteButton } from "@/components/project/FavoriteButton";
 
 type ModdingGamePageProps = {
   params: Promise<{ "game-slug": string }>;
@@ -11,6 +12,7 @@ type ModdingGamePageProps = {
 
 type ModProject = {
   id: string;
+  owner_id: string;
   title: string;
   slug: string;
   description: string;
@@ -34,7 +36,7 @@ export default async function ModdingGamePage({
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, title, slug, description, mod_version, compatibility, mod_type, mod_dependencies, mod_file_url, game_cover_url, cover_url",
+      "id, owner_id, title, slug, description, mod_version, compatibility, mod_type, mod_dependencies, mod_file_url, game_cover_url, cover_url",
     )
     .eq("project_type", "mod")
     .eq("game_slug", game.slug)
@@ -100,9 +102,12 @@ export default async function ModdingGamePage({
                   <div>
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="text-xl font-semibold">{mod.title}</h2>
-                      <span className="shrink-0 rounded-full bg-accent-glow px-2.5 py-1 text-xs text-accent">
-                        v{mod.mod_version}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <FavoriteButton projectId={mod.id} ownerId={mod.owner_id} compact />
+                        <span className="shrink-0 rounded-full bg-accent-glow px-2.5 py-1 text-xs text-accent">
+                          v{mod.mod_version}
+                        </span>
+                      </div>
                     </div>
                     <p className="mt-2 line-clamp-2 text-sm text-zinc-400">
                       {mod.description}

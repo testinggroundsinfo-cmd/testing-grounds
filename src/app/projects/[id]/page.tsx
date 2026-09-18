@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Heart } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProjectTabs } from "@/components/project/ProjectTabs";
@@ -8,6 +8,7 @@ import { ProjectTranslation } from "@/components/project/ProjectTranslation";
 import { ProjectUpvoteButton } from "@/components/project/ProjectUpvoteButton";
 import { SafetyBadge } from "@/components/project/SafetyBadge";
 import { DownloadButton } from "@/components/project/DownloadButton";
+import { FavoriteButton } from "@/components/project/FavoriteButton";
 import { T } from "@/components/i18n/T";
 import { createClient } from "@/lib/supabase/server";
 import type { DistributionKind } from "@/types/database";
@@ -34,6 +35,7 @@ type Project = {
   content_locale: "it" | "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja";
   upvote_count: number | null;
   safety_reports_count: number | null;
+  donation_url?: string | null;
 };
 
 type ProjectRelease = {
@@ -138,6 +140,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   // Fire-and-forget view tracking: never blocks rendering the page.
   void supabase.from("project_events").insert({ project_id: project.id, event_type: "view" });
 
+  const { data: creator } = await supabase
+    .from("profiles")
+    .select("donation_url")
+    .eq("id", project.owner_id)
+    .maybeSingle();
+
   const { data: releases } = await supabase
     .from("project_releases")
     .select("id, version, changelog, created_at")
@@ -182,6 +190,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               ownerId={project.owner_id}
               initialCount={project.upvote_count ?? 0}
             />
+            <FavoriteButton projectId={project.id} ownerId={project.owner_id} />
           </div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {project.title}
@@ -208,6 +217,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             {project.description}
           </p>
         </section>
+        {creator?.donation_url ? (
+          <a href={creator.donation_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-red-400/40 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-200 hover:bg-red-500/20">
+            <Heart className="h-4 w-4 fill-current" /> <T k="project.supportCreator" />
+          </a>
+        ) : null}
         <ProjectTranslation
           projectId={project.id}
           sourceLocale={project.content_locale}
@@ -341,5 +355,4 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     </AppShell>
   );
 }
-
 

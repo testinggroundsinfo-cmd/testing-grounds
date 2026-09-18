@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
 import type { Project } from "@/types/database";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { FavoriteButton } from "@/components/project/FavoriteButton";
 
 export default function DashboardPage() {
   const { t } = useLocale();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [favorites, setFavorites] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -26,6 +28,21 @@ export default function DashboardPage() {
           .order("created_at", { ascending: false });
         if (queryError) throw queryError;
         setProjects((data ?? []) as Project[]);
+        const { data: favoriteRows, error: favoritesError } = await supabase
+          .from("project_favorites")
+          .select("project_id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        if (favoritesError) throw favoritesError;
+        const favoriteIds = (favoriteRows ?? []).map((row) => row.project_id);
+        if (favoriteIds.length) {
+          const { data: favoriteProjects, error: favoriteProjectsError } = await supabase
+            .from("projects")
+            .select("*")
+            .in("id", favoriteIds);
+          if (favoriteProjectsError) throw favoriteProjectsError;
+          setFavorites((favoriteProjects ?? []) as Project[]);
+        }
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : t("dashboard.unableToLoadProjects"));
       } finally {
@@ -90,6 +107,28 @@ export default function DashboardPage() {
           </article>
         ))}
       </div>
+      {!loading ? (
+        <section className="space-y-4">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-accent">{t("favorites.dashboardLabel")}</p>
+            <h2 className="mt-1 text-2xl font-semibold">{t("favorites.dashboardTitle")}</h2>
+          </div>
+          {favorites.length ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {favorites.map((project) => (
+                <article key={project.id} className="rounded-xl border border-white/10 bg-ink-800 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-semibold">{project.title}</h3>
+                    <FavoriteButton projectId={project.id} ownerId={project.owner_id} compact />
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-sm text-zinc-400">{project.short_description || project.description}</p>
+                  <Link href={`/projects/${project.id}`} className="mt-4 inline-flex text-sm text-accent">{t("common.view")}</Link>
+                </article>
+              ))}
+            </div>
+          ) : <p className="rounded-xl border border-dashed border-white/10 p-6 text-sm text-zinc-400">{t("favorites.empty")}</p>}
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -14,7 +14,7 @@ export default async function SoftwarePage() {
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "id, title, short_description, description, platforms, tags, cover_url, created_at, development_status",
+        "id, owner_id, title, short_description, description, platforms, tags, cover_url, created_at, development_status",
       )
       .eq("category", "software")
       .or("project_type.eq.project,project_type.is.null")

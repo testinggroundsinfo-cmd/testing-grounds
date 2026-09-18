@@ -9,6 +9,7 @@ import { LanguageSelector } from "@/components/i18n/LanguageSelector";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { createClient } from "@/lib/supabaseClient";
 import { PublishSlotsBadge } from "@/components/layout/PublishSlotsBadge";
+import { NotificationsMenu } from "@/components/layout/NotificationsMenu";
 import type { User } from "@supabase/supabase-js";
 
 
@@ -63,6 +64,7 @@ export function SiteHeader() {
           {user ? (
             <>
               <PublishSlotsBadge user={user} />
+              <NotificationsMenu />
               <Link
                 href="/dashboard"
                 className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15"
@@ -118,6 +120,7 @@ export function SiteHeader() {
               {user ? (
                 <>
                   <PublishSlotsBadge user={user} />
+                  <NotificationsMenu />
                   <Link
                     href="/dashboard"
                     onClick={closeMobileMenu}

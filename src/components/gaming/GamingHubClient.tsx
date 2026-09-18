@@ -5,10 +5,12 @@ import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { FavoriteButton } from "@/components/project/FavoriteButton";
 import type { PlatformKind } from "@/types/database";
 
 export type GamingProject = {
   id: string;
+  owner_id?: string | null;
   title?: string | null;
   short_description?: string | null;
   description?: string | null;
@@ -108,7 +110,7 @@ function ProjectCard({
 }) {
   const { t } = useLocale();
   return (
-    <li>
+    <li className="relative">
       <Link
         href={`/projects/${project.id}`}
         className="group relative block h-full overflow-hidden rounded-2xl border border-white/10 bg-ink-800 transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-panel"
@@ -183,6 +185,9 @@ function ProjectCard({
           </div>
         </div>
       </Link>
+      <div className="absolute right-3 top-3 z-20">
+        <FavoriteButton projectId={project.id} ownerId={project.owner_id ?? undefined} compact />
+      </div>
     </li>
   );
 }

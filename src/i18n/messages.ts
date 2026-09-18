@@ -503,6 +503,21 @@ const dictionary: Record<string, Record<Locale, string>> = {
   "analytics.downloadClicks": { it: "Click su download/link", en: "Download/link clicks", es: "Clics en descarga/enlace", fr: "Clics sur téléchargement/lien", de: "Klicks auf Download/Link", pt: "Cliques em download/link", zh: "下载/链接点击次数", ja: "ダウンロード・リンクのクリック数" },
   "analytics.last30Days": { it: "{count} negli ultimi 30 giorni", en: "{count} in the last 30 days", es: "{count} en los últimos 30 días", fr: "{count} au cours des 30 derniers jours", de: "{count} in den letzten 30 Tagen", pt: "{count} nos últimos 30 dias", zh: "最近30天：{count}", ja: "過去30日間で {count} 件" },
   "changelog.title": { it: "Changelog & versioni", en: "Changelog & versions", es: "Registro de cambios y versiones", fr: "Journal des modifications et versions", de: "Changelog & Versionen", pt: "Changelog e versões", zh: "更新日志与版本", ja: "変更履歴とバージョン" },
+  "notifications.open": { it: "Apri notifiche", en: "Open notifications", es: "Abrir notificaciones", fr: "Ouvrir les notifications", de: "Benachrichtigungen öffnen", pt: "Abrir notificações", zh: "打开通知", ja: "通知を開く" },
+  "notifications.title": { it: "Notifiche", en: "Notifications", es: "Notificaciones", fr: "Notifications", de: "Benachrichtigungen", pt: "Notificações", zh: "通知", ja: "通知" },
+  "notifications.markAllRead": { it: "Segna tutte come lette", en: "Mark all as read", es: "Marcar todas como leídas", fr: "Tout marquer comme lu", de: "Alle als gelesen markieren", pt: "Marcar todas como lidas", zh: "全部标为已读", ja: "すべて既読にする" },
+  "notifications.empty": { it: "Non hai notifiche non lette.", en: "You have no unread notifications.", es: "No tienes notificaciones sin leer.", fr: "Vous n'avez aucune notification non lue.", de: "Du hast keine ungelesenen Benachrichtigungen.", pt: "Você não tem notificações não lidas.", zh: "你没有未读通知。", ja: "未読の通知はありません。" },
+  "notifications.commentTitle": { it: "Nuovo commento su {title}", en: "New comment on {title}", es: "Nuevo comentario en {title}", fr: "Nouveau commentaire sur {title}", de: "Neuer Kommentar zu {title}", pt: "Novo comentário em {title}", zh: "{title} 有新评论", ja: "{title} に新しいコメント" },
+  "notifications.bugTitle": { it: "Nuovo bug report su {title}", en: "New bug report on {title}", es: "Nuevo reporte de error en {title}", fr: "Nouveau rapport de bug sur {title}", de: "Neuer Bugbericht zu {title}", pt: "Novo relatório de bug em {title}", zh: "{title} 有新的错误报告", ja: "{title} の新しいバグ報告" },
+  "notifications.modTitle": { it: "Nuova mod da un creator che segui: {title}", en: "New mod from a creator you follow: {title}", es: "Nueva mod de un creador que sigues: {title}", fr: "Nouveau mod d'un créateur que vous suivez : {title}", de: "Neue Mod von einem Creator, dem du folgst: {title}", pt: "Novo mod de um criador que você segue: {title}", zh: "你关注的创作者发布了新模组：{title}", ja: "フォロー中のクリエイターの新しいMOD: {title}" },
+  "favorites.add": { it: "Aggiungi ai preferiti", en: "Add to favorites", es: "Añadir a favoritos", fr: "Ajouter aux favoris", de: "Zu Favoriten hinzufügen", pt: "Adicionar aos favoritos", zh: "添加到收藏", ja: "お気に入りに追加" },
+  "favorites.remove": { it: "Rimuovi dai preferiti", en: "Remove from favorites", es: "Quitar de favoritos", fr: "Retirer des favoris", de: "Aus Favoriten entfernen", pt: "Remover dos favoritos", zh: "从收藏中移除", ja: "お気に入りから削除" },
+  "favorites.updateError": { it: "Impossibile aggiornare i preferiti. Riprova.", en: "Unable to update favorites. Please try again.", es: "No se pudieron actualizar los favoritos. Inténtalo de nuevo.", fr: "Impossible de mettre à jour les favoris. Réessayez.", de: "Favoriten konnten nicht aktualisiert werden. Bitte versuche es erneut.", pt: "Não foi possível atualizar os favoritos. Tente novamente.", zh: "无法更新收藏，请重试。", ja: "お気に入りを更新できませんでした。もう一度お試しください。" },
+  "favorites.dashboardLabel": { it: "Wishlist", en: "Wishlist", es: "Lista de deseos", fr: "Liste de souhaits", de: "Wunschliste", pt: "Lista de desejos", zh: "心愿单", ja: "ウィッシュリスト" },
+  "favorites.dashboardTitle": { it: "I miei Preferiti", en: "My Favorites", es: "Mis favoritos", fr: "Mes favoris", de: "Meine Favoriten", pt: "Meus favoritos", zh: "我的收藏", ja: "お気に入り" },
+  "favorites.empty": { it: "Non hai ancora salvato progetti nei preferiti.", en: "You have not saved any favorite projects yet.", es: "Aún no has guardado proyectos favoritos.", fr: "Vous n'avez pas encore enregistré de projets favoris.", de: "Du hast noch keine Lieblingsprojekte gespeichert.", pt: "Você ainda não salvou projetos favoritos.", zh: "你还没有收藏任何项目。", ja: "お気に入りのプロジェクトはまだありません。" },
+  "profileForm.donationUrl": { it: "Link donazioni", en: "Donation link", es: "Enlace de donaciones", fr: "Lien de dons", de: "Spendenlink", pt: "Link de doações", zh: "捐赠链接", ja: "寄付リンク" },
+  "project.supportCreator": { it: "Supporta il Creator", en: "Support the Creator", es: "Apoya al creador", fr: "Soutenir le créateur", de: "Creator unterstützen", pt: "Apoie o criador", zh: "支持创作者", ja: "クリエイターを支援" },
 };
 
 export function getMessages(locale: Locale): Messages {
@@ -512,4 +527,3 @@ export function getMessages(locale: Locale): Messages {
   }
   return result;
 }
-

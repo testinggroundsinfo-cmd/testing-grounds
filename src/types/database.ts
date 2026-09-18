@@ -90,6 +90,7 @@ export type Project = {
   notify_new_bugs?: boolean;
   upvote_count?: number;
   safety_reports_count?: number;
+  donation_url?: string | null;
 };
 
 export type AlternativeLink = {
@@ -169,6 +170,23 @@ export type ProjectUpvote = {
 export type Follow = {
   follower_id: string;
   following_id: string;
+  created_at: string;
+};
+
+export type ProjectFavorite = {
+  project_id: string;
+  user_id: string;
+  created_at: string;
+};
+
+export type Notification = {
+  id: string;
+  user_id: string;
+  type: "comment" | "bug" | "new_mod";
+  title: string;
+  body: string | null;
+  link: string | null;
+  is_read: boolean;
   created_at: string;
 };
 
