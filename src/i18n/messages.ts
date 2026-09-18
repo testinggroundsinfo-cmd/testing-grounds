@@ -518,6 +518,19 @@ const dictionary: Record<string, Record<Locale, string>> = {
   "favorites.empty": { it: "Non hai ancora salvato progetti nei preferiti.", en: "You have not saved any favorite projects yet.", es: "Aún no has guardado proyectos favoritos.", fr: "Vous n'avez pas encore enregistré de projets favoris.", de: "Du hast noch keine Lieblingsprojekte gespeichert.", pt: "Você ainda não salvou projetos favoritos.", zh: "你还没有收藏任何项目。", ja: "お気に入りのプロジェクトはまだありません。" },
   "profileForm.donationUrl": { it: "Link donazioni", en: "Donation link", es: "Enlace de donaciones", fr: "Lien de dons", de: "Spendenlink", pt: "Link de doações", zh: "捐赠链接", ja: "寄付リンク" },
   "project.supportCreator": { it: "Supporta il Creator", en: "Support the Creator", es: "Apoya al creador", fr: "Soutenir le créateur", de: "Creator unterstützen", pt: "Apoie o criador", zh: "支持创作者", ja: "クリエイターを支援" },
+  "carousel.popularTag": { it: "🏆 Top 10", en: "🏆 Top 10", es: "🏆 Top 10", fr: "🏆 Top 10", de: "🏆 Top 10", pt: "🏆 Top 10", zh: "🏆 Top 10", ja: "🏆 Top 10" },
+  "carousel.popularTitle": { it: "I più popolari", en: "Most popular", es: "Los más populares", fr: "Les plus populaires", de: "Am beliebtesten", pt: "Mais populares", zh: "最受欢迎", ja: "人気ランキング" },
+  "carousel.newTag": { it: "🆕 Ultimi arrivi", en: "🆕 Latest arrivals", es: "🆕 Últimas novedades", fr: "🆕 Dernières arrivées", de: "🆕 Neuzugänge", pt: "🆕 Últimos lançamentos", zh: "🆕 最新上线", ja: "🆕 新着" },
+  "carousel.newTitle": { it: "Nuove uscite", en: "New releases", es: "Nuevos lanzamientos", fr: "Nouveautés", de: "Neuerscheinungen", pt: "Novos lançamentos", zh: "新品上线", ja: "新着リリース" },
+  "carousel.badgePopular": { it: "★ Popolare", en: "★ Popular", es: "★ Popular", fr: "★ Populaire", de: "★ Beliebt", pt: "★ Popular", zh: "★ 热门", ja: "★ 人気" },
+  "carousel.badgeNew": { it: "🆕 Novità", en: "🆕 New", es: "🆕 Nuevo", fr: "🆕 Nouveau", de: "🆕 Neu", pt: "🆕 Novo", zh: "🆕 新品", ja: "🆕 新着" },
+  "carousel.emptyPopular": { it: "Nessun progetto popolare al momento.", en: "No popular projects yet.", es: "Aún no hay proyectos populares.", fr: "Aucun projet populaire pour le moment.", de: "Noch keine beliebten Projekte.", pt: "Ainda não há projetos populares.", zh: "暂无热门项目。", ja: "人気のプロジェクトはまだありません。" },
+  "carousel.emptyNew": { it: "Nessuna nuova uscita al momento.", en: "No new releases yet.", es: "Aún no hay nuevos lanzamientos.", fr: "Aucune nouveauté pour le moment.", de: "Noch keine Neuerscheinungen.", pt: "Ainda não há novos lançamentos.", zh: "暂无新上线项目。", ja: "新着リリースはまだありません。" },
+  "carousel.untitled": { it: "Progetto senza titolo", en: "Untitled project", es: "Proyecto sin título", fr: "Projet sans titre", de: "Projekt ohne Titel", pt: "Projeto sem título", zh: "未命名项目", ja: "無題のプロジェクト" },
+  "carousel.noDescription": { it: "Nessuna descrizione disponibile.", en: "No description available.", es: "No hay descripción disponible.", fr: "Aucune description disponible.", de: "Keine Beschreibung verfügbar.", pt: "Nenhuma descrição disponível.", zh: "暂无描述。", ja: "説明はありません。" },
+  "carousel.noCover": { it: "Nessuna copertina", en: "No cover", es: "Sin portada", fr: "Aucune couverture", de: "Kein Cover", pt: "Sem capa", zh: "暂无封面", ja: "カバーなし" },
+  "carousel.prev": { it: "Progetti precedenti", en: "Previous projects", es: "Proyectos anteriores", fr: "Projets précédents", de: "Vorherige Projekte", pt: "Projetos anteriores", zh: "上一组项目", ja: "前のプロジェクト" },
+  "carousel.next": { it: "Progetti successivi", en: "Next projects", es: "Proyectos siguientes", fr: "Projets suivants", de: "Nächste Projekte", pt: "Próximos projetos", zh: "下一组项目", ja: "次のプロジェクト" },
 };
 
 export function getMessages(locale: Locale): Messages {

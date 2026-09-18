@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { ProjectCarousel } from "@/components/project/ProjectCarousel";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { FavoriteButton } from "@/components/project/FavoriteButton";
 import type { PlatformKind } from "@/types/database";
@@ -22,6 +23,7 @@ export type GamingProject = {
   cover_url?: string | null;
   created_at?: string | null;
   development_status?: string | null;
+  upvote_count?: number | null;
 };
 
 type Filter =
@@ -250,6 +252,9 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
           {t("gaming.hub.publish")}
         </Link>
       </header>
+
+      <ProjectCarousel variant="popular" projects={projects} />
+      <ProjectCarousel variant="new" projects={projects} />
 
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

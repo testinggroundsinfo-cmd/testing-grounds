@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { PlatformKind } from "@/types/database";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { ProjectCarousel } from "@/components/project/ProjectCarousel";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { FavoriteButton } from "@/components/project/FavoriteButton";
 
@@ -19,6 +20,7 @@ export type SoftwareProject = {
   cover_url?: string | null;
   created_at?: string | null;
   development_status?: string | null;
+  upvote_count?: number | null;
 };
 
 type Filter = "Tutti" | "Dev Tools" | "Utility" | "Open Source" | "Productivity" | "AI & Data";
@@ -115,6 +117,10 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
         <p className="mt-3 max-w-2xl text-zinc-300">{t("software.hub.subtitle")}</p>
         <Link href="/dashboard/projects/new?type=software" className="mt-6 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 hover:bg-accent-dim">{t("software.hub.publish")}</Link>
       </header>
+
+      <ProjectCarousel variant="popular" projects={projects} />
+      <ProjectCarousel variant="new" projects={projects} />
+
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative max-w-md flex-1"><Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("software.hub.searchPlaceholder")} aria-label={t("software.hub.searchLabel")} className="w-full rounded-lg border border-white/10 bg-ink-900 py-2 pl-10 pr-3 text-sm outline-none focus:border-accent/50" /></div>
