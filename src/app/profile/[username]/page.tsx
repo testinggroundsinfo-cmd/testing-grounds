@@ -44,6 +44,10 @@ const platformLabels: Record<PlatformKind, string> = {
   mobile_android: "Android",
   desktop: "Desktop",
   browser_extension: "Browser extension",
+  linux_server: "Linux Server",
+  nas: "NAS (Synology / Unraid)",
+  docker_desktop: "Docker Desktop / Local",
+  raspberry_pi: "Raspberry Pi / ARM64",
 };
 
 export default async function ProfilePage({ params }: ProfilePageProps) {

@@ -88,6 +88,10 @@ const platformKeys: Record<PlatformKind, string> = {
   mobile_android: "platform.mobileAndroid",
   desktop: "platform.desktop",
   browser_extension: "platform.browserExtension",
+  linux_server: "platform.linuxServer",
+  nas: "platform.nas",
+  docker_desktop: "platform.dockerDesktop",
+  raspberry_pi: "platform.raspberryPi",
 };
 
 function projectMatchesFilter(project: GamingProject, filter: Filter) {

@@ -17,7 +17,13 @@ export type SoftwarePlatform =
   | "desktop"
   | "browser_extension";
 
-export type PlatformKind = GamingPlatform | SoftwarePlatform;
+export type DockerPlatform =
+  | "linux_server"
+  | "nas"
+  | "docker_desktop"
+  | "raspberry_pi";
+
+export type PlatformKind = GamingPlatform | SoftwarePlatform | DockerPlatform;
 
 export type DistributionKind =
   | "iframe"
@@ -91,6 +97,8 @@ export type Project = {
   upvote_count?: number;
   safety_reports_count?: number;
   donation_url?: string | null;
+  docker_config?: string | null;
+  docker_env_example?: string | null;
 };
 
 export type AlternativeLink = {

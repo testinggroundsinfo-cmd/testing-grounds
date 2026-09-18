@@ -26,7 +26,11 @@ type PublicationType =
   | "desktop_app"
   | "web_app"
   | "browser_extension"
-  | "tool";
+  | "tool"
+  | "docker_compose"
+  | "dockerfile"
+  | "stack_template"
+  | "setup_script";
 
 type CleanProjectPayload = {
   owner_id: string;
@@ -53,6 +57,8 @@ type CleanProjectPayload = {
   game_title: string | null;
   game_cover_url: string | null;
   mod_file_url: string | null;
+  docker_config: string | null;
+  docker_env_example: string | null;
   content_locale: string;
   is_published: boolean;
 };
@@ -79,7 +85,10 @@ const publicationTypes: Record<FormCategory, readonly [PublicationType, string][
     ["tool", "Tool / Script"],
   ],
   docker: [
-    ["tool", "Docker / Container"],
+    ["docker_compose", "Docker Compose"],
+    ["dockerfile", "Dockerfile"],
+    ["stack_template", "Stack / Template"],
+    ["setup_script", "Setup Script"],
   ],
 };
 
@@ -94,6 +103,10 @@ const publicationTypeKeys: Record<PublicationType, string> = {
   web_app: "publicationTypes.webApp",
   browser_extension: "publicationTypes.browserExtension",
   tool: "publicationTypes.tool",
+  docker_compose: "publicationTypes.dockerCompose",
+  dockerfile: "publicationTypes.dockerfile",
+  stack_template: "publicationTypes.stackTemplate",
+  setup_script: "publicationTypes.setupScript",
 };
 
 const platformsByCategory: Record<
@@ -114,8 +127,10 @@ const platformsByCategory: Record<
     ["browser_extension", "Estensione browser"],
   ],
   docker: [
-    ["web_saas", "Server / Self-hosted"],
-    ["desktop", "Script / Setup"],
+    ["linux_server", "Linux Server"],
+    ["nas", "NAS (Synology / Unraid)"],
+    ["docker_desktop", "Docker Desktop / Local"],
+    ["raspberry_pi", "Raspberry Pi / ARM64"],
   ],
 };
 
@@ -129,6 +144,10 @@ const platformKeys: Record<PlatformKind, string> = {
   mobile_android: "platform.mobileAndroid",
   desktop: "platform.desktop",
   browser_extension: "platform.browserExtension",
+  linux_server: "platform.linuxServer",
+  nas: "platform.nas",
+  docker_desktop: "platform.dockerDesktop",
+  raspberry_pi: "platform.raspberryPi",
 };
 
 const gamingGenres = [
@@ -409,6 +428,9 @@ export default function NewProjectPage() {
           ? optionalValue(form, "game_cover_url") || selectedGame?.cover_url || null
           : null,
         mod_file_url: isModding ? optionalValue(form, "mod_file_url") : null,
+        docker_config: category === "docker" ? optionalValue(form, "docker_config") : null,
+        docker_env_example:
+          category === "docker" ? optionalValue(form, "docker_env_example") : null,
         content_locale: locale,
       };
 
@@ -506,6 +528,39 @@ export default function NewProjectPage() {
             ))}
           </select>
         </label>
+
+        {category === "docker" ? (
+          <div className="space-y-4 rounded-xl border border-sky-400/20 bg-sky-400/5 p-4">
+            <p className="text-sm font-medium text-sky-300">Docker &amp; Container</p>
+            <label className="block text-sm">
+              Codice Docker Compose / Configurazione
+              <textarea
+                name="docker_config"
+                rows={12}
+                spellCheck={false}
+                placeholder={"services:\n  app:\n    image: nginx:alpine"}
+                className="mt-1 w-full rounded-lg border border-white/10 bg-ink-950 px-3 py-2 font-mono text-sm leading-relaxed"
+              />
+              <span className="mt-1 block text-xs text-zinc-400">
+                Incolla qui il Docker Compose YAML, il Dockerfile o la configurazione del container.
+              </span>
+            </label>
+            <label className="block text-sm">
+              Variabili d&apos;ambiente (.env d&apos;esempio){" "}
+              <span className="text-zinc-500">({t("common.optional")})</span>
+              <textarea
+                name="docker_env_example"
+                rows={6}
+                spellCheck={false}
+                placeholder={"APP_PORT=8080\nDATABASE_URL=postgres://..."}
+                className="mt-1 w-full rounded-lg border border-white/10 bg-ink-950 px-3 py-2 font-mono text-sm leading-relaxed"
+              />
+              <span className="mt-1 block text-xs text-zinc-400">
+                Non inserire password, token o altre credenziali reali.
+              </span>
+            </label>
+          </div>
+        ) : null}
 
         {category === "modding" || publicationType === "mod" ? (
           <div className="space-y-4 rounded-xl border border-accent/20 bg-accent/5 p-4">

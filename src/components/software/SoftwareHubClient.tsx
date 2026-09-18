@@ -41,6 +41,10 @@ const platformKeys: Record<PlatformKind, string> = {
   pc: "platform.pc", mobile: "platform.mobile", webgl: "platform.webgl", console: "platform.console",
   web_saas: "platform.webSaas", mobile_ios: "platform.mobileIos", mobile_android: "platform.mobileAndroid",
   desktop: "platform.desktop", browser_extension: "platform.browserExtension",
+  linux_server: "platform.linuxServer",
+  nas: "platform.nas",
+  docker_desktop: "platform.dockerDesktop",
+  raspberry_pi: "platform.raspberryPi",
 };
 
 function getCategory(project: SoftwareProject): Exclude<Filter, "Tutti"> {
