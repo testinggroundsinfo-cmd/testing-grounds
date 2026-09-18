@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, LogOut, Menu, UserRound, X } from "lucide-react";
+import { ChevronDown, Gamepad2, LogOut, Menu, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CategorySwitch } from "@/components/layout/CategorySwitch";
 import { GlobalProjectSearch } from "@/components/layout/GlobalProjectSearch";
@@ -17,6 +17,7 @@ export function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t } = useLocale();
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -42,6 +43,7 @@ export function SiteHeader() {
     await createClient().auth.signOut();
     setUser(null);
     setMobileMenuOpen(false);
+    setAccountMenuOpen(false);
   }
 
   function closeMobileMenu() {
@@ -55,8 +57,7 @@ export function SiteHeader() {
           <Gamepad2 className="h-5 w-5 text-accent" />
           <span className="hidden sm:inline">Testing-Grounds</span>
         </Link>
-        <div className="hidden min-w-0 flex-1 items-center gap-3 md:flex">
-          <CategorySwitch />
+        <div className="hidden min-w-0 flex-1 md:block">
           <GlobalProjectSearch />
         </div>
         <nav className="ml-auto hidden items-center gap-2 text-sm text-zinc-300 md:flex">
@@ -65,21 +66,21 @@ export function SiteHeader() {
             <>
               <PublishSlotsBadge user={user} />
               <NotificationsMenu />
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15"
-              >
-                <UserRound className="h-4 w-4" />
-                {t("nav.dashboard")}
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10 hover:text-white"
-              >
-                <LogOut className="h-4 w-4" />
-                {t("nav.logout")}
-              </button>
+              <div className="relative">
+                <button type="button" onClick={() => setAccountMenuOpen((open) => !open)} aria-expanded={accountMenuOpen} className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/15">
+                  <UserRound className="h-4 w-4" />
+                  <span className="hidden lg:inline">{t("nav.dashboard")}</span>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+                {accountMenuOpen ? (
+                  <div className="absolute right-0 z-50 mt-2 min-w-44 rounded-xl border border-white/10 bg-ink-900 p-1.5 shadow-panel">
+                    <Link href="/dashboard" onClick={() => setAccountMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-white/10">{t("nav.dashboard")}</Link>
+                    <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10">
+                      <LogOut className="h-4 w-4" /> {t("nav.logout")}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             </>
           ) : (
             <>
@@ -110,11 +111,13 @@ export function SiteHeader() {
           )}
         </button>
       </div>
+      <div className="border-t border-white/10">
+        <CategorySwitch />
+      </div>
       {mobileMenuOpen ? (
         <div id="mobile-navigation" className="border-t border-white/10 px-4 pb-4 pt-3 sm:px-6 md:hidden">
           <div className="space-y-4">
             <LanguageSelector />
-            <CategorySwitch />
             <GlobalProjectSearch />
             <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-4 text-sm text-zinc-300">
               {user ? (
@@ -129,14 +132,7 @@ export function SiteHeader() {
                     <UserRound className="h-4 w-4" />
                     {t("nav.dashboard")}
                   </Link>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10 hover:text-white"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {t("nav.logout")}
-                  </button>
+                  <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10 hover:text-white"><LogOut className="h-4 w-4" />{t("nav.logout")}</button>
                 </>
               ) : (
                 <>

@@ -7,7 +7,8 @@ type Messages = Record<string, string>;
 const dictionary: Record<string, Record<Locale, string>> = {
   "nav.dashboard": { it: "Dashboard / Il mio profilo", en: "Dashboard / My profile", es: "Panel / Mi perfil", fr: "Tableau de bord / Mon profil", de: "Dashboard / Mein Profil", pt: "Painel / Meu perfil", zh: "æŽ§åˆ¶å° / æˆ‘çš„èµ„æ–™", ja: "ãƒ€ãƒƒã‚·ãƒ¥ãƒœãƒ¼ãƒ‰ / ãƒ—ãƒ­ãƒ•ã‚£ãƒ¼ãƒ«" },
   "nav.logout": { it: "Esci", en: "Log out", es: "Salir", fr: "Se dÃ©connecter", de: "Abmelden", pt: "Sair", zh: "é€€å‡º", ja: "ãƒ­ã‚°ã‚¢ã‚¦ãƒˆ" },
-  "nav.login": { it: "Accedi", en: "Log in", es: "Iniciar sesiÃ³n", fr: "Se connecter", de: "Anmelden", pt: "Entrar", zh: "ç™»å½•", ja: "ãƒ­ã‚°ã‚¤ãƒ³" },
+  "nav.categories": { it: "Categorie", en: "Categories", es: "Categorías", fr: "Catégories", de: "Kategorien", pt: "Categorias", zh: "分类", ja: "カテゴリー" },
+  "nav.login": { it: "Accedi", en: "Log in", es: "Iniciar sesión", fr: "Se connecter", de: "Anmelden", pt: "Entrar", zh: "登录", ja: "ログイン" },
   "nav.register": { it: "Registrati", en: "Sign up", es: "Registrarse", fr: "S'inscrire", de: "Registrieren", pt: "Cadastrar", zh: "æ³¨å†Œ", ja: "ç™»éŒ²" },
   "nav.openMenu": { it: "Apri menu", en: "Open menu", es: "Abrir menÃº", fr: "Ouvrir le menu", de: "MenÃ¼ Ã¶ffnen", pt: "Abrir menu", zh: "æ‰“å¼€èœå•", ja: "ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’é–‹ã" },
   "nav.closeMenu": { it: "Chiudi menu", en: "Close menu", es: "Cerrar menÃº", fr: "Fermer le menu", de: "MenÃ¼ schlieÃŸen", pt: "Fechar menu", zh: "å…³é—­èœå•", ja: "ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’é–‰ã˜ã‚‹" },

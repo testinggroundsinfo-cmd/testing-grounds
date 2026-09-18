@@ -15,14 +15,17 @@ export function CategorySwitch() {
   const pathname = usePathname();
   const { t } = useLocale();
   return (
-    <div className="flex rounded-full border border-white/10 bg-ink-800 p-1">
+    <nav
+      aria-label={t("nav.categories")}
+      className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6 lg:px-8 [scrollbar-width:thin]"
+    >
       {items.map(({ href, key, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
             key={href}
             href={href}
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm transition ${
+            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
               active ? "bg-accent text-ink-950" : "text-zinc-300 hover:text-white"
             }`}
           >
@@ -31,6 +34,6 @@ export function CategorySwitch() {
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
