@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     icon: [{ url: "/logo.png", type: "image/png" }],
     shortcut: ["/logo.png"],
   },
+  other: {
+    "google-adsense-account": "ca-pub-7880355478377757",
+  },
 };
 
 export default async function RootLayout({
