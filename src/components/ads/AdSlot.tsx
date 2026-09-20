@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useLocale } from "@/components/i18n/LocaleProvider";
-import { adFormats, isEzoicConfigured } from "@/lib/ads";
+import { adFormats } from "@/lib/ads";
 
 type AdSlotProps = {
   placement: "sidebar" | "footer";
@@ -19,7 +19,7 @@ export function AdSlot({
 
   return (
     <aside
-      data-ad-provider={isEzoicConfigured ? "ezoic" : "placeholder"}
+      data-ad-provider="adsense"
       data-ad-format={isSidebar ? adFormats.sidebar.desktop : adFormats.footer.desktop}
       data-ad-slot={isSidebar ? "sidebar" : "footer"}
       className={`relative ad-slot advertisement adsbygoogle flex max-w-full items-center justify-center overflow-hidden border border-white/10 bg-ink-800/60 text-xs uppercase tracking-widest text-zinc-500 ${

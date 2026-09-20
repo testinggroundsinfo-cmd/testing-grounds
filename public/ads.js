@@ -1,8 +1,8 @@
 /*
- * Testing-Grounds ad bootstrap.
+ * Testing-Grounds ad-block bait script.
  *
- * This file deliberately contains no Ezoic identifiers until the publisher
- * account is approved. The production Ezoic script, when provided, can be
- * added separately without changing the responsive ad placeholders.
+ * Used only by AdBlockDetector to probe whether ad-blockers strip
+ * common ad-related script requests; unrelated to the AdSense loader
+ * in src/app/layout.tsx.
  */
 window.__TG_ADS_ALLOWED = true;
