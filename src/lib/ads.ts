@@ -2,10 +2,10 @@
  * Runtime-safe ad configuration.
  *
  * Monetization runs exclusively through Google AdSense (client
- * ca-pub-7880355478377757), loaded globally via the script tag in
+ * ca-pub-7880355475837757), loaded globally via the script tag in
  * `src/app/layout.tsx` and declared in `public/ads.txt`.
  */
-export const adsenseClientId = "ca-pub-7880355478377757";
+export const adsenseClientId = "ca-pub-7880355475837757";
 
 export const adFormats = {
   sidebar: {

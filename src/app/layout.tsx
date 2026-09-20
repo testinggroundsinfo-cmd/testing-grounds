@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     shortcut: ["/logo.png"],
   },
   other: {
-    "google-adsense-account": "ca-pub-7880355478377757",
+    "google-adsense-account": "ca-pub-7880355475837757",
   },
 };
 
@@ -34,7 +34,7 @@ export default async function RootLayout({
       <head>
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7880355478377757"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7880355475837757"
           crossOrigin="anonymous"
         />
       </head>
