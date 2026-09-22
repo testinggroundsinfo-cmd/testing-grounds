@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { PlatformKind } from "@/types/database";
-import { AdBanner } from "@/components/ads/AdBanner";
 import { ProjectCarousel } from "@/components/project/ProjectCarousel";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { FavoriteButton } from "@/components/project/FavoriteButton";
@@ -144,9 +143,6 @@ export function SoftwareHubClient({ projects }: { projects: SoftwareProject[] })
       <section className="space-y-4">
         <div><p className="text-xs uppercase tracking-widest text-accent">{t("software.hub.catalogTag")}</p><h2 className="mt-1 text-2xl font-semibold">{t("software.hub.catalogTitle")}</h2></div>
         {visible.length ? <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">{visible.map((project, index) => <Card key={project.id} project={project} badge={index < 3 ? "Trending" : index === 3 ? "Novità" : "Popolare"} />)}</ul> : empty}
-      </section>
-      <section className="space-y-4">
-        <AdBanner format="horizontal" slotId="software-hub-mid" />
       </section>
     </div>
   );

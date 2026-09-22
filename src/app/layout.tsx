@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import { AdBlockDetector } from "@/components/ads/AdBlockDetector";
 import { ToastProvider } from "@/components/feedback/ToastProvider";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
@@ -31,14 +32,13 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className="dark">
-      <head>
-        <script
+      <body className="min-h-screen">
+        <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7880355475837757"
           crossOrigin="anonymous"
+          strategy="afterInteractive"
         />
-      </head>
-      <body className="min-h-screen">
         <LocaleProvider initialLocale={locale}>
           <ToastProvider>
             <AdBlockDetector />

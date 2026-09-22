@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, Download, Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
-import { AdBanner } from "@/components/ads/AdBanner";
 import { ProjectCarousel } from "@/components/project/ProjectCarousel";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { FavoriteButton } from "@/components/project/FavoriteButton";
@@ -329,9 +328,6 @@ export function GamingHubClient({ projects }: { projects: GamingProject[] }) {
         )}
       </section>
 
-      <section className="space-y-4">
-        <AdBanner format="horizontal" slotId="gaming-hub-mid" />
-      </section>
     </div>
   );
 }
